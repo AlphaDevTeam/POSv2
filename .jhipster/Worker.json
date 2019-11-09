@@ -1,0 +1,54 @@
+{
+    "name": "Worker",
+    "fields": [
+        {
+            "fieldName": "workerCode",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "workerName",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "workerLimit",
+            "fieldType": "Double"
+        },
+        {
+            "fieldName": "isActive",
+            "fieldType": "Boolean"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "location",
+            "otherEntityRelationshipName": "worker",
+            "relationshipName": "location",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "job",
+            "otherEntityRelationshipName": "assignedTo",
+            "relationshipName": "jobs",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20191109153838",
+    "javadoc": "Worker Entity.\\n@author Mihindu Karunarathne.",
+    "entityTableName": "worker",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": "*"
+}

@@ -1,0 +1,81 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="items">
+            <h2><span>Items</span> {{items.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Item Code</span></dt>
+                <dd>
+                    <span>{{items.itemCode}}</span>
+                </dd>
+                <dt><span>Item Name</span></dt>
+                <dd>
+                    <span>{{items.itemName}}</span>
+                </dd>
+                <dt><span>Item Description</span></dt>
+                <dd>
+                    <span>{{items.itemDescription}}</span>
+                </dd>
+                <dt><span>Item Price</span></dt>
+                <dd>
+                    <span>{{items.itemPrice}}</span>
+                </dd>
+                <dt><span>Item Serial</span></dt>
+                <dd>
+                    <span>{{items.itemSerial}}</span>
+                </dd>
+                <dt><span>Item Supplier Serial</span></dt>
+                <dd>
+                    <span>{{items.itemSupplierSerial}}</span>
+                </dd>
+                <dt><span>Item Cost</span></dt>
+                <dd>
+                    <span>{{items.itemCost}}</span>
+                </dd>
+                <dt><span>Item Sale Price</span></dt>
+                <dd>
+                    <span>{{items.itemSalePrice}}</span>
+                </dd>
+                <dt><span>Original Stock Date</span></dt>
+                <dd>
+                    <span>{{items.originalStockDate}}</span>
+                </dd>
+                <dt><span>Modified Stock Date</span></dt>
+                <dd>
+                    <span>{{items.modifiedStockDate}}</span>
+                </dd>
+                <dt><span>Related Design</span></dt>
+                <dd>
+                    <div *ngIf="items.relatedDesign">
+                        <a [routerLink]="['/desings', items.relatedDesign?.id, 'view']">{{items.relatedDesign?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Related Product</span></dt>
+                <dd>
+                    <div *ngIf="items.relatedProduct">
+                        <a [routerLink]="['/products', items.relatedProduct?.id, 'view']">{{items.relatedProduct?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Location</span></dt>
+                <dd>
+                    <div *ngIf="items.location">
+                        <a [routerLink]="['/location', items.location?.id, 'view']">{{items.location?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/items', items.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

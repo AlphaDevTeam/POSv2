@@ -1,0 +1,32 @@
+{
+    "name": "CashBookBalance",
+    "fields": [
+        {
+            "fieldName": "balance",
+            "fieldType": "Double",
+            "fieldValidateRules": [
+                "required"
+            ]
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "location",
+            "otherEntityRelationshipName": "cashBookBalance",
+            "relationshipName": "location",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20191109153824",
+    "javadoc": "CashBook Balance Entity.\\n@author Mihindu Karunarathne.",
+    "entityTableName": "cash_book_balance",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": "*"
+}

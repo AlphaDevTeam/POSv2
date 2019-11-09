@@ -1,0 +1,49 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="purchaseOrder">
+            <h2><span>Purchase Order</span> {{purchaseOrder.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Po Number</span></dt>
+                <dd>
+                    <span>{{purchaseOrder.poNumber}}</span>
+                </dd>
+                <dt><span>Po Date</span></dt>
+                <dd>
+                    <span>{{purchaseOrder.poDate}}</span>
+                </dd>
+                <dt><span>Supplier</span></dt>
+                <dd>
+                    <div *ngIf="purchaseOrder.supplier">
+                        <a [routerLink]="['/supplier', purchaseOrder.supplier?.id, 'view']">{{purchaseOrder.supplier?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Location</span></dt>
+                <dd>
+                    <div *ngIf="purchaseOrder.location">
+                        <a [routerLink]="['/location', purchaseOrder.location?.id, 'view']">{{purchaseOrder.location?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Related GRN</span></dt>
+                <dd>
+                    <div *ngIf="purchaseOrder.relatedGRN">
+                        <a [routerLink]="['/goods-receipt', purchaseOrder.relatedGRN?.id, 'view']">{{purchaseOrder.relatedGRN?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/purchase-order', purchaseOrder.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

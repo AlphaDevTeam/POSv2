@@ -1,0 +1,84 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-job-heading">Create or edit a Job</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!editForm.get('id').value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
+                        readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_jobCode">Job Code</label>
+                    <input type="text" class="form-control" name="jobCode" id="field_jobCode"
+                           formControlName="jobCode"/>
+                    <div *ngIf="editForm.get('jobCode').invalid && (editForm.get('jobCode').dirty || editForm.get('jobCode').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('jobCode').errors.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_jobDescription">Job Description</label>
+                    <input type="text" class="form-control" name="jobDescription" id="field_jobDescription"
+                           formControlName="jobDescription"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_jobStartDate">Job Start Date</label>
+                    <div class="input-group">
+                        <input id="field_jobStartDate" type="text" class="form-control" name="jobStartDate" ngbDatepicker  #jobStartDateDp="ngbDatepicker" formControlName="jobStartDate"/>
+                        <span class="input-group-append">
+                            <button type="button" class="btn btn-secondary" (click)="jobStartDateDp.toggle()"><fa-icon [icon]="'calendar-alt'"></fa-icon></button>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_jobEndDate">Job End Date</label>
+                    <div class="input-group">
+                        <input id="field_jobEndDate" type="text" class="form-control" name="jobEndDate" ngbDatepicker  #jobEndDateDp="ngbDatepicker" formControlName="jobEndDate"/>
+                        <span class="input-group-append">
+                            <button type="button" class="btn btn-secondary" (click)="jobEndDateDp.toggle()"><fa-icon [icon]="'calendar-alt'"></fa-icon></button>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_jobAmount">Job Amount</label>
+                    <input type="number" class="form-control" name="jobAmount" id="field_jobAmount"
+                           formControlName="jobAmount"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_status">Status</label>
+                    <select class="form-control" id="field_status" name="status" formControlName="status">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="jobStatusOption.id === editForm.get('status').value?.id ? editForm.get('status').value : jobStatusOption" *ngFor="let jobStatusOption of statuses; trackBy: trackJobStatusById">{{jobStatusOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_location">Location</label>
+                    <select class="form-control" id="field_location" name="location" formControlName="location">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="locationOption.id === editForm.get('location').value?.id ? editForm.get('location').value : locationOption" *ngFor="let locationOption of locations; trackBy: trackLocationById">{{locationOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_customer">Customer</label>
+                    <select class="form-control" id="field_customer" name="customer" formControlName="customer">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="customerOption.id === editForm.get('customer').value?.id ? editForm.get('customer').value : customerOption" *ngFor="let customerOption of customers; trackBy: trackCustomerById">{{customerOption.id}}</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+{
+    "name": "GoodsReceipt",
+    "fields": [
+        {
+            "fieldName": "grnNumber",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "grnDate",
+            "fieldType": "LocalDate",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "poNumber",
+            "fieldType": "String"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "one-to-many",
+            "otherEntityName": "goodsReceiptDetails",
+            "otherEntityRelationshipName": "grn",
+            "relationshipName": "details"
+        },
+        {
+            "relationshipType": "one-to-many",
+            "otherEntityName": "purchaseOrder",
+            "otherEntityRelationshipName": "relatedGRN",
+            "relationshipName": "linkedPOs"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "supplier",
+            "otherEntityRelationshipName": "goodsReceipt",
+            "relationshipName": "supplier",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "location",
+            "otherEntityRelationshipName": "goodsReceipt",
+            "relationshipName": "location",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20191109153821",
+    "javadoc": "GRN Entity.\\n@author Mihindu Karunarathne.",
+    "entityTableName": "goods_receipt",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": "*"
+}

@@ -1,0 +1,71 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-purchase-order-heading">Create or edit a Purchase Order</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!editForm.get('id').value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
+                        readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_poNumber">Po Number</label>
+                    <input type="text" class="form-control" name="poNumber" id="field_poNumber"
+                           formControlName="poNumber"/>
+                    <div *ngIf="editForm.get('poNumber').invalid && (editForm.get('poNumber').dirty || editForm.get('poNumber').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('poNumber').errors.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_poDate">Po Date</label>
+                    <div class="input-group">
+                        <input id="field_poDate" type="text" class="form-control" name="poDate" ngbDatepicker  #poDateDp="ngbDatepicker" formControlName="poDate"/>
+                        <span class="input-group-append">
+                            <button type="button" class="btn btn-secondary" (click)="poDateDp.toggle()"><fa-icon [icon]="'calendar-alt'"></fa-icon></button>
+                        </span>
+                    </div>
+                    <div *ngIf="editForm.get('poDate').invalid && (editForm.get('poDate').dirty || editForm.get('poDate').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('poDate').errors.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_supplier">Supplier</label>
+                    <select class="form-control" id="field_supplier" name="supplier" formControlName="supplier">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="supplierOption.id === editForm.get('supplier').value?.id ? editForm.get('supplier').value : supplierOption" *ngFor="let supplierOption of suppliers; trackBy: trackSupplierById">{{supplierOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_location">Location</label>
+                    <select class="form-control" id="field_location" name="location" formControlName="location">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="locationOption.id === editForm.get('location').value?.id ? editForm.get('location').value : locationOption" *ngFor="let locationOption of locations; trackBy: trackLocationById">{{locationOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_relatedGRN">Related GRN</label>
+                    <select class="form-control" id="field_relatedGRN" name="relatedGRN" formControlName="relatedGRN">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="goodsReceiptOption.id === editForm.get('relatedGRN').value?.id ? editForm.get('relatedGRN').value : goodsReceiptOption" *ngFor="let goodsReceiptOption of goodsreceipts; trackBy: trackGoodsReceiptById">{{goodsReceiptOption.id}}</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+{
+    "name": "SupplierAccountBalance",
+    "fields": [
+        {
+            "fieldName": "balance",
+            "fieldType": "Double",
+            "fieldValidateRules": [
+                "required"
+            ]
+        }
+    ],
+    "relationships": [],
+    "changelogDate": "20191109153828",
+    "javadoc": "SupplierAccount Balance Entity.\\n@author Mihindu Karunarathne.",
+    "entityTableName": "supplier_account_balance",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": "*"
+}

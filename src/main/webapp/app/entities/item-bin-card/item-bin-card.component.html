@@ -1,0 +1,76 @@
+<div>
+    <h2 id="page-heading">
+        <span>Item Bin Cards</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-item-bin-card" [routerLink]="['/item-bin-card/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span >
+            Create a new Item Bin Card
+            </span>
+        </button>
+    </h2>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="alert alert-warning" *ngIf="itemBinCards?.length === 0">
+        <span>No itemBinCards found</span>
+    </div>
+    <div class="table-responsive" *ngIf="itemBinCards?.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+            <tr>
+            <th scope="col" ><span>ID</span></th>
+            <th scope="col" ><span>Transaction Date</span></th>
+            <th scope="col" ><span>Transaction Description</span></th>
+            <th scope="col" ><span>Transaction Qty</span></th>
+            <th scope="col" ><span>Transaction Balance</span></th>
+            <th scope="col" ><span>Location</span></th>
+            <th scope="col" ><span>Item</span></th>
+            <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let itemBinCard of itemBinCards ;trackBy: trackId">
+                <td><a [routerLink]="['/item-bin-card', itemBinCard.id, 'view' ]">{{itemBinCard.id}}</a></td>
+                <td>{{itemBinCard.transactionDate | date:'mediumDate'}}</td>
+                <td>{{itemBinCard.transactionDescription}}</td>
+                <td>{{itemBinCard.transactionQty}}</td>
+                <td>{{itemBinCard.transactionBalance}}</td>
+                <td>
+                    <div *ngIf="itemBinCard.location">
+                        <a [routerLink]="['/location', itemBinCard.location?.id, 'view' ]" >{{itemBinCard.location?.id}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="itemBinCard.item">
+                        <a [routerLink]="['/items', itemBinCard.item?.id, 'view' ]" >{{itemBinCard.item?.id}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button type="submit"
+                                [routerLink]="['/item-bin-card', itemBinCard.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/item-bin-card', itemBinCard.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/item-bin-card', { outlets: { popup: itemBinCard.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

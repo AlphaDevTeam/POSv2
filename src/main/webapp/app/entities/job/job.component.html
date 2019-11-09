@@ -1,0 +1,84 @@
+<div>
+    <h2 id="page-heading">
+        <span>Jobs</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-job" [routerLink]="['/job/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span >
+            Create a new Job
+            </span>
+        </button>
+    </h2>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="alert alert-warning" *ngIf="jobs?.length === 0">
+        <span>No jobs found</span>
+    </div>
+    <div class="table-responsive" *ngIf="jobs?.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+            <tr>
+            <th scope="col" ><span>ID</span></th>
+            <th scope="col" ><span>Job Code</span></th>
+            <th scope="col" ><span>Job Description</span></th>
+            <th scope="col" ><span>Job Start Date</span></th>
+            <th scope="col" ><span>Job End Date</span></th>
+            <th scope="col" ><span>Job Amount</span></th>
+            <th scope="col" ><span>Status</span></th>
+            <th scope="col" ><span>Location</span></th>
+            <th scope="col" ><span>Customer</span></th>
+            <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let job of jobs ;trackBy: trackId">
+                <td><a [routerLink]="['/job', job.id, 'view' ]">{{job.id}}</a></td>
+                <td>{{job.jobCode}}</td>
+                <td>{{job.jobDescription}}</td>
+                <td>{{job.jobStartDate | date:'mediumDate'}}</td>
+                <td>{{job.jobEndDate | date:'mediumDate'}}</td>
+                <td>{{job.jobAmount}}</td>
+                <td>
+                    <div *ngIf="job.status">
+                        <a [routerLink]="['/job-status', job.status?.id, 'view' ]" >{{job.status?.id}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="job.location">
+                        <a [routerLink]="['/location', job.location?.id, 'view' ]" >{{job.location?.id}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="job.customer">
+                        <a [routerLink]="['/customer', job.customer?.id, 'view' ]" >{{job.customer?.id}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button type="submit"
+                                [routerLink]="['/job', job.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/job', job.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/job', { outlets: { popup: job.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

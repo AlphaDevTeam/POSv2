@@ -1,0 +1,78 @@
+<div>
+    <h2 id="page-heading">
+        <span>Purchase Accounts</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-purchase-account" [routerLink]="['/purchase-account/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span >
+            Create a new Purchase Account
+            </span>
+        </button>
+    </h2>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="alert alert-warning" *ngIf="purchaseAccounts?.length === 0">
+        <span>No purchaseAccounts found</span>
+    </div>
+    <div class="table-responsive" *ngIf="purchaseAccounts?.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+            <tr>
+            <th scope="col" ><span>ID</span></th>
+            <th scope="col" ><span>Transaction Date</span></th>
+            <th scope="col" ><span>Transaction Description</span></th>
+            <th scope="col" ><span>Transaction Amount DR</span></th>
+            <th scope="col" ><span>Transaction Amount CR</span></th>
+            <th scope="col" ><span>Transaction Balance</span></th>
+            <th scope="col" ><span>Location</span></th>
+            <th scope="col" ><span>Transaction Type</span></th>
+            <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let purchaseAccount of purchaseAccounts ;trackBy: trackId">
+                <td><a [routerLink]="['/purchase-account', purchaseAccount.id, 'view' ]">{{purchaseAccount.id}}</a></td>
+                <td>{{purchaseAccount.transactionDate | date:'mediumDate'}}</td>
+                <td>{{purchaseAccount.transactionDescription}}</td>
+                <td>{{purchaseAccount.transactionAmountDR}}</td>
+                <td>{{purchaseAccount.transactionAmountCR}}</td>
+                <td>{{purchaseAccount.transactionBalance}}</td>
+                <td>
+                    <div *ngIf="purchaseAccount.location">
+                        <a [routerLink]="['/location', purchaseAccount.location?.id, 'view' ]" >{{purchaseAccount.location?.id}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="purchaseAccount.transactionType">
+                        <a [routerLink]="['/transaction-type', purchaseAccount.transactionType?.id, 'view' ]" >{{purchaseAccount.transactionType?.id}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button type="submit"
+                                [routerLink]="['/purchase-account', purchaseAccount.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/purchase-account', purchaseAccount.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/purchase-account', { outlets: { popup: purchaseAccount.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

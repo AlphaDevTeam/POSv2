@@ -1,0 +1,45 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="stock">
+            <h2><span>Stock</span> {{stock.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Stock Qty</span></dt>
+                <dd>
+                    <span>{{stock.stockQty}}</span>
+                </dd>
+                <dt><span>Item</span></dt>
+                <dd>
+                    <div *ngIf="stock.item">
+                        <a [routerLink]="['/items', stock.item?.id, 'view']">{{stock.item?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Location</span></dt>
+                <dd>
+                    <div *ngIf="stock.location">
+                        <a [routerLink]="['/location', stock.location?.id, 'view']">{{stock.location?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Company</span></dt>
+                <dd>
+                    <div *ngIf="stock.company">
+                        <a [routerLink]="['/company', stock.company?.id, 'view']">{{stock.company?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/stock', stock.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

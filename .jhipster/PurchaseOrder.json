@@ -1,0 +1,59 @@
+{
+    "name": "PurchaseOrder",
+    "fields": [
+        {
+            "fieldName": "poNumber",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "poDate",
+            "fieldType": "LocalDate",
+            "fieldValidateRules": [
+                "required"
+            ]
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "one-to-many",
+            "otherEntityName": "purchaseOrderDetails",
+            "otherEntityRelationshipName": "po",
+            "relationshipName": "details"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "supplier",
+            "otherEntityRelationshipName": "purchaseOrder",
+            "relationshipName": "supplier",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "location",
+            "otherEntityRelationshipName": "purchaseOrder",
+            "relationshipName": "location",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "goodsReceipt",
+            "otherEntityRelationshipName": "linkedPOs",
+            "relationshipName": "relatedGRN",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20191109153819",
+    "javadoc": "PurchaseOrder Entity.\\n@author Mihindu Karunarathne.",
+    "entityTableName": "purchase_order",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": "*"
+}

@@ -1,0 +1,70 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-worker-heading">Create or edit a Worker</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!editForm.get('id').value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
+                        readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_workerCode">Worker Code</label>
+                    <input type="text" class="form-control" name="workerCode" id="field_workerCode"
+                           formControlName="workerCode"/>
+                    <div *ngIf="editForm.get('workerCode').invalid && (editForm.get('workerCode').dirty || editForm.get('workerCode').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('workerCode').errors.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_workerName">Worker Name</label>
+                    <input type="text" class="form-control" name="workerName" id="field_workerName"
+                           formControlName="workerName"/>
+                    <div *ngIf="editForm.get('workerName').invalid && (editForm.get('workerName').dirty || editForm.get('workerName').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('workerName').errors.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_workerLimit">Worker Limit</label>
+                    <input type="number" class="form-control" name="workerLimit" id="field_workerLimit"
+                           formControlName="workerLimit"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_isActive">Is Active</label>
+                    <input type="checkbox" class="form-control" name="isActive" id="field_isActive"
+                           formControlName="isActive"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_location">Location</label>
+                    <select class="form-control" id="field_location" name="location" formControlName="location">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="locationOption.id === editForm.get('location').value?.id ? editForm.get('location').value : locationOption" *ngFor="let locationOption of locations; trackBy: trackLocationById">{{locationOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_jobs">Jobs</label>
+                    <select class="form-control" id="field_jobs" name="jobs" formControlName="jobs">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="jobOption.id === editForm.get('jobs').value?.id ? editForm.get('jobs').value : jobOption" *ngFor="let jobOption of jobs; trackBy: trackJobById">{{jobOption.id}}</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

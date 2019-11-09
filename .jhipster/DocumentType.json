@@ -1,0 +1,31 @@
+{
+    "name": "DocumentType",
+    "fields": [
+        {
+            "fieldName": "documentTypeCode",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "documentType",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        }
+    ],
+    "relationships": [],
+    "changelogDate": "20191109153833",
+    "javadoc": "DocumentType Entity.\\n@author Mihindu Karunarathne.",
+    "entityTableName": "document_type",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": "*"
+}

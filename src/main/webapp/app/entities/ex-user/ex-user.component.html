@@ -1,0 +1,74 @@
+<div>
+    <h2 id="page-heading">
+        <span>Ex Users</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-ex-user" [routerLink]="['/ex-user/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span >
+            Create a new Ex User
+            </span>
+        </button>
+    </h2>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="alert alert-warning" *ngIf="exUsers?.length === 0">
+        <span>No exUsers found</span>
+    </div>
+    <div class="table-responsive" *ngIf="exUsers?.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+            <tr>
+            <th scope="col" ><span>ID</span></th>
+            <th scope="col" ><span>User Key</span></th>
+            <th scope="col" ><span>Related User</span></th>
+            <th scope="col" ><span>Company</span></th>
+            <th scope="col" ><span>Locations</span></th>
+            <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let exUser of exUsers ;trackBy: trackId">
+                <td><a [routerLink]="['/ex-user', exUser.id, 'view' ]">{{exUser.id}}</a></td>
+                <td>{{exUser.userKey}}</td>
+                <td>
+                    {{exUser.relatedUser?.id}}
+                </td>
+                <td>
+                    <div *ngIf="exUser.company">
+                        <a [routerLink]="['/company', exUser.company?.id, 'view' ]" >{{exUser.company?.id}}</a>
+                    </div>
+                </td>
+                <td>
+                    <span *ngFor="let locations of exUser.locations; let last = last">
+                            <a class="form-control-static" [routerLink]="['/location', locations?.id, 'view' ]">{{locations.id}}</a>{{last ? '' : ', '}}
+                        </span>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button type="submit"
+                                [routerLink]="['/ex-user', exUser.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/ex-user', exUser.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/ex-user', { outlets: { popup: exUser.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

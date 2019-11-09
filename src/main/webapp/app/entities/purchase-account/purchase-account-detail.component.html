@@ -1,0 +1,55 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="purchaseAccount">
+            <h2><span>Purchase Account</span> {{purchaseAccount.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Transaction Date</span></dt>
+                <dd>
+                    <span>{{purchaseAccount.transactionDate}}</span>
+                </dd>
+                <dt><span>Transaction Description</span></dt>
+                <dd>
+                    <span>{{purchaseAccount.transactionDescription}}</span>
+                </dd>
+                <dt><span>Transaction Amount DR</span></dt>
+                <dd>
+                    <span>{{purchaseAccount.transactionAmountDR}}</span>
+                </dd>
+                <dt><span>Transaction Amount CR</span></dt>
+                <dd>
+                    <span>{{purchaseAccount.transactionAmountCR}}</span>
+                </dd>
+                <dt><span>Transaction Balance</span></dt>
+                <dd>
+                    <span>{{purchaseAccount.transactionBalance}}</span>
+                </dd>
+                <dt><span>Location</span></dt>
+                <dd>
+                    <div *ngIf="purchaseAccount.location">
+                        <a [routerLink]="['/location', purchaseAccount.location?.id, 'view']">{{purchaseAccount.location?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Transaction Type</span></dt>
+                <dd>
+                    <div *ngIf="purchaseAccount.transactionType">
+                        <a [routerLink]="['/transaction-type', purchaseAccount.transactionType?.id, 'view']">{{purchaseAccount.transactionType?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/purchase-account', purchaseAccount.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

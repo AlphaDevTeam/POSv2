@@ -1,0 +1,51 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="worker">
+            <h2><span>Worker</span> {{worker.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Worker Code</span></dt>
+                <dd>
+                    <span>{{worker.workerCode}}</span>
+                </dd>
+                <dt><span>Worker Name</span></dt>
+                <dd>
+                    <span>{{worker.workerName}}</span>
+                </dd>
+                <dt><span>Worker Limit</span></dt>
+                <dd>
+                    <span>{{worker.workerLimit}}</span>
+                </dd>
+                <dt><span>Is Active</span></dt>
+                <dd>
+                    <span>{{worker.isActive}}</span>
+                </dd>
+                <dt><span>Location</span></dt>
+                <dd>
+                    <div *ngIf="worker.location">
+                        <a [routerLink]="['/location', worker.location?.id, 'view']">{{worker.location?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Jobs</span></dt>
+                <dd>
+                    <div *ngIf="worker.jobs">
+                        <a [routerLink]="['/job', worker.jobs?.id, 'view']">{{worker.jobs?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/worker', worker.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

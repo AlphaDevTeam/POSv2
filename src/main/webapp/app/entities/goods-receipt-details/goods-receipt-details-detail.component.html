@@ -1,0 +1,39 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="goodsReceiptDetails">
+            <h2><span>Goods Receipt Details</span> {{goodsReceiptDetails.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Grn Qty</span></dt>
+                <dd>
+                    <span>{{goodsReceiptDetails.grnQty}}</span>
+                </dd>
+                <dt><span>Item</span></dt>
+                <dd>
+                    <div *ngIf="goodsReceiptDetails.item">
+                        <a [routerLink]="['/items', goodsReceiptDetails.item?.id, 'view']">{{goodsReceiptDetails.item?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Grn</span></dt>
+                <dd>
+                    <div *ngIf="goodsReceiptDetails.grn">
+                        <a [routerLink]="['/goods-receipt', goodsReceiptDetails.grn?.id, 'view']">{{goodsReceiptDetails.grn?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/goods-receipt-details', goodsReceiptDetails.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

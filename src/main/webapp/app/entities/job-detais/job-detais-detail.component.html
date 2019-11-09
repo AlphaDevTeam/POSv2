@@ -1,0 +1,43 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="jobDetais">
+            <h2><span>Job Detais</span> {{jobDetais.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Job Item Price</span></dt>
+                <dd>
+                    <span>{{jobDetais.jobItemPrice}}</span>
+                </dd>
+                <dt><span>Job Item Qty</span></dt>
+                <dd>
+                    <span>{{jobDetais.jobItemQty}}</span>
+                </dd>
+                <dt><span>Item</span></dt>
+                <dd>
+                    <div *ngIf="jobDetais.item">
+                        <a [routerLink]="['/items', jobDetais.item?.id, 'view']">{{jobDetais.item?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Job</span></dt>
+                <dd>
+                    <div *ngIf="jobDetais.job">
+                        <a [routerLink]="['/job', jobDetais.job?.id, 'view']">{{jobDetais.job?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/job-detais', jobDetais.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

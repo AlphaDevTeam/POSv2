@@ -1,0 +1,74 @@
+<div>
+    <h2 id="page-heading">
+        <span>Goods Receipts</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-goods-receipt" [routerLink]="['/goods-receipt/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span >
+            Create a new Goods Receipt
+            </span>
+        </button>
+    </h2>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="alert alert-warning" *ngIf="goodsReceipts?.length === 0">
+        <span>No goodsReceipts found</span>
+    </div>
+    <div class="table-responsive" *ngIf="goodsReceipts?.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+            <tr>
+            <th scope="col" ><span>ID</span></th>
+            <th scope="col" ><span>Grn Number</span></th>
+            <th scope="col" ><span>Grn Date</span></th>
+            <th scope="col" ><span>Po Number</span></th>
+            <th scope="col" ><span>Supplier</span></th>
+            <th scope="col" ><span>Location</span></th>
+            <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let goodsReceipt of goodsReceipts ;trackBy: trackId">
+                <td><a [routerLink]="['/goods-receipt', goodsReceipt.id, 'view' ]">{{goodsReceipt.id}}</a></td>
+                <td>{{goodsReceipt.grnNumber}}</td>
+                <td>{{goodsReceipt.grnDate | date:'mediumDate'}}</td>
+                <td>{{goodsReceipt.poNumber}}</td>
+                <td>
+                    <div *ngIf="goodsReceipt.supplier">
+                        <a [routerLink]="['/supplier', goodsReceipt.supplier?.id, 'view' ]" >{{goodsReceipt.supplier?.id}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="goodsReceipt.location">
+                        <a [routerLink]="['/location', goodsReceipt.location?.id, 'view' ]" >{{goodsReceipt.location?.id}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button type="submit"
+                                [routerLink]="['/goods-receipt', goodsReceipt.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/goods-receipt', goodsReceipt.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/goods-receipt', { outlets: { popup: goodsReceipt.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="location">
+            <h2><span>Location</span> {{location.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Location Code</span></dt>
+                <dd>
+                    <span>{{location.locationCode}}</span>
+                </dd>
+                <dt><span>Location Name</span></dt>
+                <dd>
+                    <span>{{location.locationName}}</span>
+                </dd>
+                <dt><span>Location Prof Margin</span></dt>
+                <dd>
+                    <span>{{location.locationProfMargin}}</span>
+                </dd>
+                <dt><span>Is Active</span></dt>
+                <dd>
+                    <span>{{location.isActive}}</span>
+                </dd>
+                <dt><span>Company</span></dt>
+                <dd>
+                    <div *ngIf="location.company">
+                        <a [routerLink]="['/company', location.company?.id, 'view']">{{location.company?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/location', location.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

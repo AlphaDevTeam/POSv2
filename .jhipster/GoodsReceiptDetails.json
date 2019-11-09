@@ -1,0 +1,39 @@
+{
+    "name": "GoodsReceiptDetails",
+    "fields": [
+        {
+            "fieldName": "grnQty",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "items",
+            "otherEntityRelationshipName": "goodsReceiptDetails",
+            "relationshipName": "item",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "goodsReceipt",
+            "otherEntityRelationshipName": "details",
+            "relationshipName": "grn",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20191109153822",
+    "javadoc": "GRN Details Entity.\\n@author Mihindu Karunarathne.",
+    "entityTableName": "goods_receipt_details",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": "*"
+}

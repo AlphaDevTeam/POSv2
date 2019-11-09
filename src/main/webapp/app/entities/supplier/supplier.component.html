@@ -1,0 +1,70 @@
+<div>
+    <h2 id="page-heading">
+        <span>Suppliers</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-supplier" [routerLink]="['/supplier/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span >
+            Create a new Supplier
+            </span>
+        </button>
+    </h2>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="alert alert-warning" *ngIf="suppliers?.length === 0">
+        <span>No suppliers found</span>
+    </div>
+    <div class="table-responsive" *ngIf="suppliers?.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+            <tr>
+            <th scope="col" ><span>ID</span></th>
+            <th scope="col" ><span>Supplier Code</span></th>
+            <th scope="col" ><span>Supplier Name</span></th>
+            <th scope="col" ><span>Supplier Limit</span></th>
+            <th scope="col" ><span>Is Active</span></th>
+            <th scope="col" ><span>Location</span></th>
+            <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let supplier of suppliers ;trackBy: trackId">
+                <td><a [routerLink]="['/supplier', supplier.id, 'view' ]">{{supplier.id}}</a></td>
+                <td>{{supplier.supplierCode}}</td>
+                <td>{{supplier.supplierName}}</td>
+                <td>{{supplier.supplierLimit}}</td>
+                <td>{{supplier.isActive}}</td>
+                <td>
+                    <div *ngIf="supplier.location">
+                        <a [routerLink]="['/location', supplier.location?.id, 'view' ]" >{{supplier.location?.id}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button type="submit"
+                                [routerLink]="['/supplier', supplier.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/supplier', supplier.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/supplier', { outlets: { popup: supplier.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

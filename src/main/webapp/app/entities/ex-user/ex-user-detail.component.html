@@ -1,0 +1,43 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="exUser">
+            <h2><span>Ex User</span> {{exUser.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>User Key</span></dt>
+                <dd>
+                    <span>{{exUser.userKey}}</span>
+                </dd>
+                <dt><span>Related User</span></dt>
+                <dd>
+                    {{exUser.relatedUser?.id}}
+                </dd>
+                <dt><span>Company</span></dt>
+                <dd>
+                    <div *ngIf="exUser.company">
+                        <a [routerLink]="['/company', exUser.company?.id, 'view']">{{exUser.company?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Locations</span></dt>
+                <dd>
+                    <span *ngFor="let locations of exUser.locations; let last = last">
+                        <a [routerLink]="['/location', locations?.id, 'view' ]">{{locations.id}}</a>{{last ? '' : ', '}}
+                    </span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/ex-user', exUser.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

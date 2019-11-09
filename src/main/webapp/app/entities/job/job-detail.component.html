@@ -1,0 +1,61 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="job">
+            <h2><span>Job</span> {{job.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Job Code</span></dt>
+                <dd>
+                    <span>{{job.jobCode}}</span>
+                </dd>
+                <dt><span>Job Description</span></dt>
+                <dd>
+                    <span>{{job.jobDescription}}</span>
+                </dd>
+                <dt><span>Job Start Date</span></dt>
+                <dd>
+                    <span>{{job.jobStartDate}}</span>
+                </dd>
+                <dt><span>Job End Date</span></dt>
+                <dd>
+                    <span>{{job.jobEndDate}}</span>
+                </dd>
+                <dt><span>Job Amount</span></dt>
+                <dd>
+                    <span>{{job.jobAmount}}</span>
+                </dd>
+                <dt><span>Status</span></dt>
+                <dd>
+                    <div *ngIf="job.status">
+                        <a [routerLink]="['/job-status', job.status?.id, 'view']">{{job.status?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Location</span></dt>
+                <dd>
+                    <div *ngIf="job.location">
+                        <a [routerLink]="['/location', job.location?.id, 'view']">{{job.location?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Customer</span></dt>
+                <dd>
+                    <div *ngIf="job.customer">
+                        <a [routerLink]="['/customer', job.customer?.id, 'view']">{{job.customer?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/job', job.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

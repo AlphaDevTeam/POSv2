@@ -1,0 +1,45 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="supplier">
+            <h2><span>Supplier</span> {{supplier.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Supplier Code</span></dt>
+                <dd>
+                    <span>{{supplier.supplierCode}}</span>
+                </dd>
+                <dt><span>Supplier Name</span></dt>
+                <dd>
+                    <span>{{supplier.supplierName}}</span>
+                </dd>
+                <dt><span>Supplier Limit</span></dt>
+                <dd>
+                    <span>{{supplier.supplierLimit}}</span>
+                </dd>
+                <dt><span>Is Active</span></dt>
+                <dd>
+                    <span>{{supplier.isActive}}</span>
+                </dd>
+                <dt><span>Location</span></dt>
+                <dd>
+                    <div *ngIf="supplier.location">
+                        <a [routerLink]="['/location', supplier.location?.id, 'view']">{{supplier.location?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/supplier', supplier.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

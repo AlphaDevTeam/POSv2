@@ -1,0 +1,53 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-purchase-order-details-heading">Create or edit a Purchase Order Details</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!editForm.get('id').value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
+                        readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_itemQty">Item Qty</label>
+                    <input type="number" class="form-control" name="itemQty" id="field_itemQty"
+                           formControlName="itemQty"/>
+                    <div *ngIf="editForm.get('itemQty').invalid && (editForm.get('itemQty').dirty || editForm.get('itemQty').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('itemQty').errors.required">
+                        This field is required.
+                        </small>
+                        <small class="form-text text-danger"
+                            [hidden]="!editForm.get('itemQty')?.errors?.number">
+                            This field should be a number.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_item">Item</label>
+                    <select class="form-control" id="field_item" name="item" formControlName="item">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="itemsOption.id === editForm.get('item').value?.id ? editForm.get('item').value : itemsOption" *ngFor="let itemsOption of items; trackBy: trackItemsById">{{itemsOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_po">Po</label>
+                    <select class="form-control" id="field_po" name="po" formControlName="po">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="purchaseOrderOption.id === editForm.get('po').value?.id ? editForm.get('po').value : purchaseOrderOption" *ngFor="let purchaseOrderOption of purchaseorders; trackBy: trackPurchaseOrderById">{{purchaseOrderOption.id}}</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

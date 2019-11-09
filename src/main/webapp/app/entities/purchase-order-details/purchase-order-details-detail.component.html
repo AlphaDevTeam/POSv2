@@ -1,0 +1,39 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="purchaseOrderDetails">
+            <h2><span>Purchase Order Details</span> {{purchaseOrderDetails.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Item Qty</span></dt>
+                <dd>
+                    <span>{{purchaseOrderDetails.itemQty}}</span>
+                </dd>
+                <dt><span>Item</span></dt>
+                <dd>
+                    <div *ngIf="purchaseOrderDetails.item">
+                        <a [routerLink]="['/items', purchaseOrderDetails.item?.id, 'view']">{{purchaseOrderDetails.item?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Po</span></dt>
+                <dd>
+                    <div *ngIf="purchaseOrderDetails.po">
+                        <a [routerLink]="['/purchase-order', purchaseOrderDetails.po?.id, 'view']">{{purchaseOrderDetails.po?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/purchase-order-details', purchaseOrderDetails.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

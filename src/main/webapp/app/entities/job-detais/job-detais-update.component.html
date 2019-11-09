@@ -1,0 +1,68 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-job-detais-heading">Create or edit a Job Detais</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!editForm.get('id').value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
+                        readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_jobItemPrice">Job Item Price</label>
+                    <input type="number" class="form-control" name="jobItemPrice" id="field_jobItemPrice"
+                           formControlName="jobItemPrice"/>
+                    <div *ngIf="editForm.get('jobItemPrice').invalid && (editForm.get('jobItemPrice').dirty || editForm.get('jobItemPrice').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('jobItemPrice').errors.required">
+                        This field is required.
+                        </small>
+                        <small class="form-text text-danger"
+                            [hidden]="!editForm.get('jobItemPrice')?.errors?.number">
+                            This field should be a number.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_jobItemQty">Job Item Qty</label>
+                    <input type="number" class="form-control" name="jobItemQty" id="field_jobItemQty"
+                           formControlName="jobItemQty"/>
+                    <div *ngIf="editForm.get('jobItemQty').invalid && (editForm.get('jobItemQty').dirty || editForm.get('jobItemQty').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('jobItemQty').errors.required">
+                        This field is required.
+                        </small>
+                        <small class="form-text text-danger"
+                            [hidden]="!editForm.get('jobItemQty')?.errors?.number">
+                            This field should be a number.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_item">Item</label>
+                    <select class="form-control" id="field_item" name="item" formControlName="item">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="itemsOption.id === editForm.get('item').value?.id ? editForm.get('item').value : itemsOption" *ngFor="let itemsOption of items; trackBy: trackItemsById">{{itemsOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_job">Job</label>
+                    <select class="form-control" id="field_job" name="job" formControlName="job">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="jobOption.id === editForm.get('job').value?.id ? editForm.get('job').value : jobOption" *ngFor="let jobOption of jobs; trackBy: trackJobById">{{jobOption.id}}</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

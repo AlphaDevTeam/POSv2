@@ -1,0 +1,51 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="itemBinCard">
+            <h2><span>Item Bin Card</span> {{itemBinCard.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Transaction Date</span></dt>
+                <dd>
+                    <span>{{itemBinCard.transactionDate}}</span>
+                </dd>
+                <dt><span>Transaction Description</span></dt>
+                <dd>
+                    <span>{{itemBinCard.transactionDescription}}</span>
+                </dd>
+                <dt><span>Transaction Qty</span></dt>
+                <dd>
+                    <span>{{itemBinCard.transactionQty}}</span>
+                </dd>
+                <dt><span>Transaction Balance</span></dt>
+                <dd>
+                    <span>{{itemBinCard.transactionBalance}}</span>
+                </dd>
+                <dt><span>Location</span></dt>
+                <dd>
+                    <div *ngIf="itemBinCard.location">
+                        <a [routerLink]="['/location', itemBinCard.location?.id, 'view']">{{itemBinCard.location?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Item</span></dt>
+                <dd>
+                    <div *ngIf="itemBinCard.item">
+                        <a [routerLink]="['/items', itemBinCard.item?.id, 'view']">{{itemBinCard.item?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/item-bin-card', itemBinCard.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

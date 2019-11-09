@@ -1,0 +1,58 @@
+<div>
+    <h2 id="page-heading">
+        <span>Supplier Account Balances</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-supplier-account-balance" [routerLink]="['/supplier-account-balance/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span >
+            Create a new Supplier Account Balance
+            </span>
+        </button>
+    </h2>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="alert alert-warning" *ngIf="supplierAccountBalances?.length === 0">
+        <span>No supplierAccountBalances found</span>
+    </div>
+    <div class="table-responsive" *ngIf="supplierAccountBalances?.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+            <tr>
+            <th scope="col" ><span>ID</span></th>
+            <th scope="col" ><span>Balance</span></th>
+            <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let supplierAccountBalance of supplierAccountBalances ;trackBy: trackId">
+                <td><a [routerLink]="['/supplier-account-balance', supplierAccountBalance.id, 'view' ]">{{supplierAccountBalance.id}}</a></td>
+                <td>{{supplierAccountBalance.balance}}</td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button type="submit"
+                                [routerLink]="['/supplier-account-balance', supplierAccountBalance.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/supplier-account-balance', supplierAccountBalance.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/supplier-account-balance', { outlets: { popup: supplierAccountBalance.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

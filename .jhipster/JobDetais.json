@@ -1,0 +1,46 @@
+{
+    "name": "JobDetais",
+    "fields": [
+        {
+            "fieldName": "jobItemPrice",
+            "fieldType": "Double",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "jobItemQty",
+            "fieldType": "Integer",
+            "fieldValidateRules": [
+                "required"
+            ]
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "items",
+            "otherEntityRelationshipName": "jobDetais",
+            "relationshipName": "item",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "job",
+            "otherEntityRelationshipName": "details",
+            "relationshipName": "job",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20191109153815",
+    "javadoc": "Job Details Entity.\\n@author Mihindu Karunarathne.",
+    "entityTableName": "job_detais",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": "*"
+}

@@ -1,0 +1,61 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="supplierAccount">
+            <h2><span>Supplier Account</span> {{supplierAccount.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span>Transaction Date</span></dt>
+                <dd>
+                    <span>{{supplierAccount.transactionDate}}</span>
+                </dd>
+                <dt><span>Transaction Description</span></dt>
+                <dd>
+                    <span>{{supplierAccount.transactionDescription}}</span>
+                </dd>
+                <dt><span>Transaction Amount DR</span></dt>
+                <dd>
+                    <span>{{supplierAccount.transactionAmountDR}}</span>
+                </dd>
+                <dt><span>Transaction Amount CR</span></dt>
+                <dd>
+                    <span>{{supplierAccount.transactionAmountCR}}</span>
+                </dd>
+                <dt><span>Transaction Balance</span></dt>
+                <dd>
+                    <span>{{supplierAccount.transactionBalance}}</span>
+                </dd>
+                <dt><span>Location</span></dt>
+                <dd>
+                    <div *ngIf="supplierAccount.location">
+                        <a [routerLink]="['/location', supplierAccount.location?.id, 'view']">{{supplierAccount.location?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Transaction Type</span></dt>
+                <dd>
+                    <div *ngIf="supplierAccount.transactionType">
+                        <a [routerLink]="['/transaction-type', supplierAccount.transactionType?.id, 'view']">{{supplierAccount.transactionType?.id}}</a>
+                    </div>
+                </dd>
+                <dt><span>Supplier</span></dt>
+                <dd>
+                    <div *ngIf="supplierAccount.supplier">
+                        <a [routerLink]="['/supplier', supplierAccount.supplier?.id, 'view']">{{supplierAccount.supplier?.id}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/supplier-account', supplierAccount.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

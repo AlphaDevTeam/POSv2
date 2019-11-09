@@ -1,0 +1,75 @@
+{
+    "name": "Job",
+    "fields": [
+        {
+            "fieldName": "jobCode",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        },
+        {
+            "fieldName": "jobDescription",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "jobStartDate",
+            "fieldType": "LocalDate"
+        },
+        {
+            "fieldName": "jobEndDate",
+            "fieldType": "LocalDate"
+        },
+        {
+            "fieldName": "jobAmount",
+            "fieldType": "Double"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "one-to-one",
+            "otherEntityName": "jobStatus",
+            "otherEntityRelationshipName": "job",
+            "relationshipName": "status",
+            "otherEntityField": "id",
+            "ownerSide": true
+        },
+        {
+            "relationshipType": "one-to-many",
+            "otherEntityName": "jobDetais",
+            "otherEntityRelationshipName": "job",
+            "relationshipName": "details"
+        },
+        {
+            "relationshipType": "one-to-many",
+            "otherEntityName": "worker",
+            "otherEntityRelationshipName": "jobs",
+            "relationshipName": "assignedTo"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "location",
+            "otherEntityRelationshipName": "job",
+            "relationshipName": "location",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "otherEntityName": "customer",
+            "otherEntityRelationshipName": "job",
+            "relationshipName": "customer",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20191109153814",
+    "javadoc": "Job Entity.\\n@author Mihindu Karunarathne.",
+    "entityTableName": "job",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "readOnly": false,
+    "clientRootFolder": "",
+    "applications": "*"
+}
