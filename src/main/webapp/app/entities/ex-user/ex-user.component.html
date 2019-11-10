@@ -28,19 +28,19 @@
             </thead>
             <tbody>
             <tr *ngFor="let exUser of exUsers ;trackBy: trackId">
-                <td><a [routerLink]="['/ex-user', exUser.id, 'view' ]">{{exUser.id}}</a></td>
+                <td><a [routerLink]="['/ex-user', exUser.id, 'view' ]">{{exUser.login}}</a></td>
                 <td>{{exUser.userKey}}</td>
                 <td>
                     {{exUser.relatedUser?.id}}
                 </td>
                 <td>
                     <div *ngIf="exUser.company">
-                        <a [routerLink]="['/company', exUser.company?.id, 'view' ]" >{{exUser.company?.id}}</a>
+                        <a [routerLink]="['/company', exUser.company?.id, 'view' ]" >{{exUser.company?.companyCode}}</a>
                     </div>
                 </td>
                 <td>
                     <span *ngFor="let locations of exUser.locations; let last = last">
-                            <a class="form-control-static" [routerLink]="['/location', locations?.id, 'view' ]">{{locations.id}}</a>{{last ? '' : ', '}}
+                            <a class="form-control-static" [routerLink]="['/location', locations?.id, 'view' ]">{{locations.locationCode}}</a>{{last ? '' : ', '}}
                         </span>
                 </td>
                 <td class="text-right">

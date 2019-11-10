@@ -11,18 +11,18 @@
                 </dd>
                 <dt><span>Related User</span></dt>
                 <dd>
-                    {{exUser.relatedUser?.id}}
+                    {{exUser.relatedUser?.login}}
                 </dd>
                 <dt><span>Company</span></dt>
                 <dd>
                     <div *ngIf="exUser.company">
-                        <a [routerLink]="['/company', exUser.company?.id, 'view']">{{exUser.company?.id}}</a>
+                        <a [routerLink]="['/company', exUser.company?.id, 'view']">{{exUser.company?.companyCode}}</a>
                     </div>
                 </dd>
                 <dt><span>Locations</span></dt>
                 <dd>
                     <span *ngFor="let locations of exUser.locations; let last = last">
-                        <a [routerLink]="['/location', locations?.id, 'view' ]">{{locations.id}}</a>{{last ? '' : ', '}}
+                        <a [routerLink]="['/location', locations?.id, 'view' ]">{{locations.locationCode}}</a>{{last ? '' : ', '}}
                     </span>
                 </dd>
             </dl>

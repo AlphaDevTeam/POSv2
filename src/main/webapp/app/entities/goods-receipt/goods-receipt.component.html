@@ -35,12 +35,12 @@
                 <td>{{goodsReceipt.poNumber}}</td>
                 <td>
                     <div *ngIf="goodsReceipt.supplier">
-                        <a [routerLink]="['/supplier', goodsReceipt.supplier?.id, 'view' ]" >{{goodsReceipt.supplier?.id}}</a>
+                        <a [routerLink]="['/supplier', goodsReceipt.supplier?.id, 'view' ]" >{{goodsReceipt.supplier?.supplierCode}}</a>
                     </div>
                 </td>
                 <td>
                     <div *ngIf="goodsReceipt.location">
-                        <a [routerLink]="['/location', goodsReceipt.location?.id, 'view' ]" >{{goodsReceipt.location?.id}}</a>
+                        <a [routerLink]="['/location', goodsReceipt.location?.id, 'view' ]" >{{goodsReceipt.location?.locationCode}}</a>
                     </div>
                 </td>
                 <td class="text-right">

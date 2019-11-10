@@ -48,19 +48,19 @@
                 <dt><span>Related Design</span></dt>
                 <dd>
                     <div *ngIf="items.relatedDesign">
-                        <a [routerLink]="['/desings', items.relatedDesign?.id, 'view']">{{items.relatedDesign?.id}}</a>
+                        <a [routerLink]="['/desings', items.relatedDesign?.id, 'view']">{{items.relatedDesign?.desingCode}}</a>
                     </div>
                 </dd>
                 <dt><span>Related Product</span></dt>
                 <dd>
                     <div *ngIf="items.relatedProduct">
-                        <a [routerLink]="['/products', items.relatedProduct?.id, 'view']">{{items.relatedProduct?.id}}</a>
+                        <a [routerLink]="['/products', items.relatedProduct?.id, 'view']">{{items.relatedProduct?.productCode}}</a>
                     </div>
                 </dd>
                 <dt><span>Location</span></dt>
                 <dd>
                     <div *ngIf="items.location">
-                        <a [routerLink]="['/location', items.location?.id, 'view']">{{items.location?.id}}</a>
+                        <a [routerLink]="['/location', items.location?.id, 'view']">{{items.location?.locationCode}}</a>
                     </div>
                 </dd>
             </dl>

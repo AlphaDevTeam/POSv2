@@ -28,7 +28,7 @@
                 <dt><span>Location</span></dt>
                 <dd>
                     <div *ngIf="customerAccount.location">
-                        <a [routerLink]="['/location', customerAccount.location?.id, 'view']">{{customerAccount.location?.id}}</a>
+                        <a [routerLink]="['/location', customerAccount.location?.id, 'view']">{{customerAccount.location?.locationCode}}</a>
                     </div>
                 </dd>
                 <dt><span>Transaction Type</span></dt>

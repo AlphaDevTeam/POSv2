@@ -25,14 +25,14 @@
                     <label class="form-control-label" for="field_item">Item</label>
                     <select class="form-control" id="field_item" name="item" formControlName="item">
                         <option [ngValue]="null"></option>
-                        <option [ngValue]="itemsOption.id === editForm.get('item').value?.id ? editForm.get('item').value : itemsOption" *ngFor="let itemsOption of items; trackBy: trackItemsById">{{itemsOption.id}}</option>
+                        <option [ngValue]="itemsOption.id === editForm.get('item').value?.id ? editForm.get('item').value : itemsOption" *ngFor="let itemsOption of items; trackBy: trackItemsById">{{itemsOption.itemCode}}</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-control-label" for="field_grn">Grn</label>
                     <select class="form-control" id="field_grn" name="grn" formControlName="grn">
                         <option [ngValue]="null"></option>
-                        <option [ngValue]="goodsReceiptOption.id === editForm.get('grn').value?.id ? editForm.get('grn').value : goodsReceiptOption" *ngFor="let goodsReceiptOption of goodsreceipts; trackBy: trackGoodsReceiptById">{{goodsReceiptOption.id}}</option>
+                        <option [ngValue]="goodsReceiptOption.id === editForm.get('grn').value?.id ? editForm.get('grn').value : goodsReceiptOption" *ngFor="let goodsReceiptOption of goodsreceipts; trackBy: trackGoodsReceiptById">{{goodsReceiptOption.grnNumber}}</option>
                     </select>
                 </div>
             </div>

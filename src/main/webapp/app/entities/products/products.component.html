@@ -36,7 +36,7 @@
                 <td>{{products.productProfMargin}}</td>
                 <td>
                     <div *ngIf="products.location">
-                        <a [routerLink]="['/location', products.location?.id, 'view' ]" >{{products.location?.id}}</a>
+                        <a [routerLink]="['/location', products.location?.id, 'view' ]" >{{products.location?.locationCode}}</a>
                     </div>
                 </td>
                 <td class="text-right">

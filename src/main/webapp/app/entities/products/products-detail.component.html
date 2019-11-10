@@ -24,7 +24,7 @@
                 <dt><span>Location</span></dt>
                 <dd>
                     <div *ngIf="products.location">
-                        <a [routerLink]="['/location', products.location?.id, 'view']">{{products.location?.id}}</a>
+                        <a [routerLink]="['/location', products.location?.id, 'view']">{{products.location?.locationCode}}</a>
                     </div>
                 </dd>
             </dl>

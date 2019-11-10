@@ -87,6 +87,26 @@ export class ItemsUpdateComponent implements OnInit {
       .subscribe((res: ILocation[]) => (this.locations = res), (res: HttpErrorResponse) => this.onError(res.message));
   }
 
+  updateProduct(productID: number) {
+    this.desingsService
+      .query({ 'relatedProductId.equals': productID })
+      .pipe(
+        filter((mayBeOk: HttpResponse<IDesings[]>) => mayBeOk.ok),
+        map((response: HttpResponse<IDesings[]>) => response.body)
+      )
+      .subscribe((res: IDesings[]) => (this.desings = res), (res: HttpErrorResponse) => this.onError(res.message));
+  }
+
+  updateLocation(locationID: number) {
+    this.productsService
+      .query({ 'locationId.equals': locationID })
+      .pipe(
+        filter((mayBeOk: HttpResponse<IProducts[]>) => mayBeOk.ok),
+        map((response: HttpResponse<IProducts[]>) => response.body)
+      )
+      .subscribe((res: IProducts[]) => (this.products = res), (res: HttpErrorResponse) => this.onError(res.message));
+  }
+
   updateForm(items: IItems) {
     this.editForm.patchValue({
       id: items.id,

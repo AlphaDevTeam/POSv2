@@ -24,13 +24,13 @@
                 <dt><span>Location</span></dt>
                 <dd>
                     <div *ngIf="itemBinCard.location">
-                        <a [routerLink]="['/location', itemBinCard.location?.id, 'view']">{{itemBinCard.location?.id}}</a>
+                        <a [routerLink]="['/location', itemBinCard.location?.id, 'view']">{{itemBinCard.location?.locationCode}}</a>
                     </div>
                 </dd>
                 <dt><span>Item</span></dt>
                 <dd>
                     <div *ngIf="itemBinCard.item">
-                        <a [routerLink]="['/items', itemBinCard.item?.id, 'view']">{{itemBinCard.item?.id}}</a>
+                        <a [routerLink]="['/items', itemBinCard.item?.id, 'view']">{{itemBinCard.item?.itemCode}}</a>
                     </div>
                 </dd>
             </dl>

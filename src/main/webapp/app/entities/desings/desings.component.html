@@ -37,12 +37,12 @@
                 <td>{{desings.desingProfMargin}}</td>
                 <td>
                     <div *ngIf="desings.relatedProduct">
-                        <a [routerLink]="['/products', desings.relatedProduct?.id, 'view' ]" >{{desings.relatedProduct?.id}}</a>
+                        <a [routerLink]="['/products', desings.relatedProduct?.id, 'view' ]" >{{desings.relatedProduct?.productCode}}</a>
                     </div>
                 </td>
                 <td>
                     <div *ngIf="desings.location">
-                        <a [routerLink]="['/location', desings.location?.id, 'view' ]" >{{desings.location?.id}}</a>
+                        <a [routerLink]="['/location', desings.location?.id, 'view' ]" >{{desings.location?.locationCode}}</a>
                     </div>
                 </td>
                 <td class="text-right">

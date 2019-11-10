@@ -27,11 +27,11 @@
             </thead>
             <tbody>
             <tr *ngFor="let goodsReceiptDetails of goodsReceiptDetails ;trackBy: trackId">
-                <td><a [routerLink]="['/goods-receipt-details', goodsReceiptDetails.id, 'view' ]">{{goodsReceiptDetails.id}}</a></td>
+                <td><a [routerLink]="['/goods-receipt-details', goodsReceiptDetails.id, 'view' ]">{{goodsReceiptDetails.grnNumber}}</a></td>
                 <td>{{goodsReceiptDetails.grnQty}}</td>
                 <td>
                     <div *ngIf="goodsReceiptDetails.item">
-                        <a [routerLink]="['/items', goodsReceiptDetails.item?.id, 'view' ]" >{{goodsReceiptDetails.item?.id}}</a>
+                        <a [routerLink]="['/items', goodsReceiptDetails.item?.id, 'view' ]" >{{goodsReceiptDetails.item?.itemCode}}</a>
                     </div>
                 </td>
                 <td>

@@ -37,12 +37,12 @@
                 <td>{{itemBinCard.transactionBalance}}</td>
                 <td>
                     <div *ngIf="itemBinCard.location">
-                        <a [routerLink]="['/location', itemBinCard.location?.id, 'view' ]" >{{itemBinCard.location?.id}}</a>
+                        <a [routerLink]="['/location', itemBinCard.location?.id, 'view' ]" >{{itemBinCard.location?.locationCode}}</a>
                     </div>
                 </td>
                 <td>
                     <div *ngIf="itemBinCard.item">
-                        <a [routerLink]="['/items', itemBinCard.item?.id, 'view' ]" >{{itemBinCard.item?.id}}</a>
+                        <a [routerLink]="['/items', itemBinCard.item?.id, 'view' ]" >{{itemBinCard.item?.itemCode}}</a>
                     </div>
                 </td>
                 <td class="text-right">

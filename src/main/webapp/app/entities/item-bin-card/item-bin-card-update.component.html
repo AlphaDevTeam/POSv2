@@ -70,14 +70,14 @@
                     <label class="form-control-label" for="field_location">Location</label>
                     <select class="form-control" id="field_location" name="location" formControlName="location">
                         <option [ngValue]="null"></option>
-                        <option [ngValue]="locationOption.id === editForm.get('location').value?.id ? editForm.get('location').value : locationOption" *ngFor="let locationOption of locations; trackBy: trackLocationById">{{locationOption.id}}</option>
+                        <option [ngValue]="locationOption.id === editForm.get('location').value?.id ? editForm.get('location').value : locationOption" *ngFor="let locationOption of locations; trackBy: trackLocationById">{{locationOption.locationCode}}</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-control-label" for="field_item">Item</label>
                     <select class="form-control" id="field_item" name="item" formControlName="item">
                         <option [ngValue]="null"></option>
-                        <option [ngValue]="itemsOption.id === editForm.get('item').value?.id ? editForm.get('item').value : itemsOption" *ngFor="let itemsOption of items; trackBy: trackItemsById">{{itemsOption.id}}</option>
+                        <option [ngValue]="itemsOption.id === editForm.get('item').value?.id ? editForm.get('item').value : itemsOption" *ngFor="let itemsOption of items; trackBy: trackItemsById">{{itemsOption.itemCode}}</option>
                     </select>
                 </div>
             </div>
