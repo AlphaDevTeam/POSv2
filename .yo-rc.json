@@ -35,7 +35,14 @@
     "otherModules": [],
     "enableTranslation": false,
     "blueprints": [],
-    "herokuAppName": "po-sv-2",
-    "herokuDeployType": "git"
+    "aws": {
+      "applicationName": "po-sv-2",
+      "environmentName": "po-sv-2-env",
+      "bucketName": "po-sv-2",
+      "instanceType": "t2.large",
+      "awsRegion": "ap-southeast-2",
+      "dbName": "POSv2",
+      "dbInstanceClass": "db.t2.micro"
+    }
   }
 }
