@@ -7,6 +7,9 @@ import { LoginModalService } from 'app/core/login/login-modal.service';
 import { AccountService } from 'app/core/auth/account.service';
 import { Account } from 'app/core/user/account.model';
 
+import { ExUserService } from 'app/entities/ex-user/ex-user.service';
+import { IExUser } from 'app/shared/model/ex-user.model';
+
 @Component({
   selector: 'jhi-home',
   templateUrl: './home.component.html',
@@ -14,11 +17,13 @@ import { Account } from 'app/core/user/account.model';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   account: Account;
+  exuser: IExUser;
   authSubscription: Subscription;
   modalRef: NgbModalRef;
 
   constructor(
     private accountService: AccountService,
+    private exUserService: ExUserService,
     private loginModalService: LoginModalService,
     private eventManager: JhiEventManager
   ) {}

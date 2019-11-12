@@ -2,6 +2,8 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.Location;
 import com.alphadevs.pos.repository.LocationRepository;
+import com.alphadevs.pos.security.SecurityUtils;
+import com.alphadevs.pos.service.UserService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -16,8 +18,12 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.alphadevs.pos.security.AuthoritiesConstants.ADMIN;
+import static com.alphadevs.pos.security.AuthoritiesConstants.USER;
 
 /**
  * REST controller for managing {@link com.alphadevs.pos.domain.Location}.
@@ -34,9 +40,11 @@ public class LocationResource {
     private String applicationName;
 
     private final LocationRepository locationRepository;
+    private final UserService userService;
 
-    public LocationResource(LocationRepository locationRepository) {
+    public LocationResource(LocationRepository locationRepository, UserService userService) {
         this.locationRepository = locationRepository;
+        this.userService = userService;
     }
 
     /**
@@ -88,7 +96,13 @@ public class LocationResource {
     @GetMapping("/locations")
     public List<Location> getAllLocations() {
         log.debug("REST request to get all Locations");
-        return locationRepository.findAll();
+        List<Location> locationBasedOnRole = new ArrayList<>();
+        if (SecurityUtils.isCurrentUserInRole(ADMIN)){
+            locationBasedOnRole =  locationRepository.findAll();
+        }else if (SecurityUtils.isCurrentUserInRole(USER)){
+            locationBasedOnRole =  userService.getUserLocations();
+        }
+        return locationBasedOnRole;
     }
 
     /**

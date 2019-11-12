@@ -89,8 +89,17 @@ Generic styles
   opacity: 1;
 }
 
-.footer {
+.footer-copyright {
   border-top: 1px solid rgba(0, 0, 0, 0.125);
+  width: 80%;
+  float: left;
+}
+
+.footer-user-details {
+  border-top: 1px solid rgba(0, 0, 0, 0.125);
+  width: 20%;
+  float: right;
+  text-align: right;
 }
 
 .hand,

@@ -70,7 +70,7 @@ public class LocationResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final LocationResource locationResource = new LocationResource(locationRepository);
+        final LocationResource locationResource = new LocationResource(locationRepository, userService);
         this.restLocationMockMvc = MockMvcBuilders.standaloneSetup(locationResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -224,7 +224,7 @@ public class LocationResourceIT {
             .andExpect(jsonPath("$.[*].locationProfMargin").value(hasItem(DEFAULT_LOCATION_PROF_MARGIN.doubleValue())))
             .andExpect(jsonPath("$.[*].isActive").value(hasItem(DEFAULT_IS_ACTIVE.booleanValue())));
     }
-    
+
     @Test
     @Transactional
     public void getLocation() throws Exception {

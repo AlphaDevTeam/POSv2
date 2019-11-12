@@ -1,6 +1,7 @@
 package com.alphadevs.pos.web.rest;
 
 
+import com.alphadevs.pos.domain.ExUser;
 import com.alphadevs.pos.domain.User;
 import com.alphadevs.pos.repository.UserRepository;
 import com.alphadevs.pos.security.SecurityUtils;
@@ -102,9 +103,24 @@ public class AccountResource {
      */
     @GetMapping("/account")
     public UserDTO getAccount() {
-        return userService.getUserWithAuthorities()
-            .map(UserDTO::new)
-            .orElseThrow(() -> new AccountResourceException("User could not be found"));
+        UserDTO userDTO = userService.getUserWithAuthorities().map(UserDTO::new).orElseThrow(() -> new AccountResourceException("User could not be found"));
+        userDTO.setCompany(userService.getExUser().get().getCompany());
+        return userDTO;
+    }
+
+    /**
+     * {@code GET  /account/exuser} : get the current exuser.
+     *
+     * @return the current exuser.
+     * @throws RuntimeException {@code 500 (Internal Server Error)} if the user couldn't be returned.
+     */
+    @GetMapping("/account/exuser")
+    public ExUser getCurrentExUser() {
+        if (userService.getExUser().isPresent()) {
+            return userService.getExUser().get();
+        }else{
+            throw new AccountResourceException("User could not be found");
+        }
     }
 
     /**

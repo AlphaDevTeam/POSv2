@@ -33,7 +33,6 @@ public class ExUser implements Serializable {
     private User relatedUser;
 
     @ManyToOne
-    @JsonIgnoreProperties("exUsers")
     private Company company;
 
     @ManyToMany
@@ -42,6 +41,12 @@ public class ExUser implements Serializable {
                joinColumns = @JoinColumn(name = "ex_user_id", referencedColumnName = "id"),
                inverseJoinColumns = @JoinColumn(name = "locations_id", referencedColumnName = "id"))
     private Set<Location> locations = new HashSet<>();
+
+    public ExUser() {
+    }
+
+    public ExUser(ExUser exUser) {
+    }
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {

@@ -169,12 +169,6 @@ public class Location implements Serializable {
 
     @Override
     public String toString() {
-        return "Location{" +
-            "id=" + getId() +
-            ", locationCode='" + getLocationCode() + "'" +
-            ", locationName='" + getLocationName() + "'" +
-            ", locationProfMargin=" + getLocationProfMargin() +
-            ", isActive='" + isIsActive() + "'" +
-            "}";
+        return getLocationCode();
     }
 }

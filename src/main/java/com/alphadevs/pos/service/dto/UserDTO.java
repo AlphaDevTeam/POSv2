@@ -3,6 +3,7 @@ package com.alphadevs.pos.service.dto;
 import com.alphadevs.pos.config.Constants;
 
 import com.alphadevs.pos.domain.Authority;
+import com.alphadevs.pos.domain.Company;
 import com.alphadevs.pos.domain.User;
 
 import javax.validation.constraints.Email;
@@ -53,6 +54,8 @@ public class UserDTO {
 
     private Set<String> authorities;
 
+    private Company company;
+
     public UserDTO() {
         // Empty constructor needed for Jackson.
     }
@@ -85,6 +88,14 @@ public class UserDTO {
 
     public String getLogin() {
         return login;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
     }
 
     public void setLogin(String login) {

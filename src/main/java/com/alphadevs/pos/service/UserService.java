@@ -2,8 +2,12 @@ package com.alphadevs.pos.service;
 
 import com.alphadevs.pos.config.Constants;
 import com.alphadevs.pos.domain.Authority;
+import com.alphadevs.pos.domain.ExUser;
+import com.alphadevs.pos.domain.Location;
 import com.alphadevs.pos.domain.User;
 import com.alphadevs.pos.repository.AuthorityRepository;
+import com.alphadevs.pos.repository.ExUserRepository;
+import com.alphadevs.pos.repository.LocationRepository;
 import com.alphadevs.pos.repository.UserRepository;
 import com.alphadevs.pos.security.AuthoritiesConstants;
 import com.alphadevs.pos.security.SecurityUtils;
@@ -36,14 +40,20 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private final ExUserRepository exUserRepository;
+
+    private final LocationRepository locationRepository;
+
     private final PasswordEncoder passwordEncoder;
 
     private final AuthorityRepository authorityRepository;
 
     private final CacheManager cacheManager;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthorityRepository authorityRepository, CacheManager cacheManager) {
+    public UserService(UserRepository userRepository, ExUserRepository exUserRepository, LocationRepository locationRepository, PasswordEncoder passwordEncoder, AuthorityRepository authorityRepository, CacheManager cacheManager) {
         this.userRepository = userRepository;
+        this.exUserRepository = exUserRepository;
+        this.locationRepository = locationRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
@@ -263,6 +273,18 @@ public class UserService {
         return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
     }
 
+
+    @Transactional(readOnly = true)
+    public Optional<ExUser> getExUser() {
+        return getUserWithAuthorities().flatMap(exUserRepository::findOneByRelatedUser);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Location> getUserLocations() {
+        return locationRepository.findAllByUsers(getExUser().get());
+    }
+
+
     /**
      * Not activated users should be automatically deleted after 3 days.
      * <p>
@@ -292,4 +314,5 @@ public class UserService {
         Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE)).evict(user.getLogin());
         Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE)).evict(user.getEmail());
     }
+
 }
