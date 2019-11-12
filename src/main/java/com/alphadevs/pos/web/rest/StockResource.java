@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.Stock;
-import com.alphadevs.pos.repository.StockRepository;
+import com.alphadevs.pos.service.StockService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.StockCriteria;
+import com.alphadevs.pos.service.StockQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class StockResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final StockRepository stockRepository;
+    private final StockService stockService;
 
-    public StockResource(StockRepository stockRepository) {
-        this.stockRepository = stockRepository;
+    private final StockQueryService stockQueryService;
+
+    public StockResource(StockService stockService, StockQueryService stockQueryService) {
+        this.stockService = stockService;
+        this.stockQueryService = stockQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class StockResource {
         if (stock.getId() != null) {
             throw new BadRequestAlertException("A new stock cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Stock result = stockRepository.save(stock);
+        Stock result = stockService.save(stock);
         return ResponseEntity.created(new URI("/api/stocks/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class StockResource {
         if (stock.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Stock result = stockRepository.save(stock);
+        Stock result = stockService.save(stock);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, stock.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class StockResource {
      * {@code GET  /stocks} : get all the stocks.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of stocks in body.
      */
     @GetMapping("/stocks")
-    public List<Stock> getAllStocks() {
-        log.debug("REST request to get all Stocks");
-        return stockRepository.findAll();
+    public ResponseEntity<List<Stock>> getAllStocks(StockCriteria criteria) {
+        log.debug("REST request to get Stocks by criteria: {}", criteria);
+        List<Stock> entityList = stockQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /stocks/count} : count all the stocks.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/stocks/count")
+    public ResponseEntity<Long> countStocks(StockCriteria criteria) {
+        log.debug("REST request to count Stocks by criteria: {}", criteria);
+        return ResponseEntity.ok().body(stockQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class StockResource {
     @GetMapping("/stocks/{id}")
     public ResponseEntity<Stock> getStock(@PathVariable Long id) {
         log.debug("REST request to get Stock : {}", id);
-        Optional<Stock> stock = stockRepository.findById(id);
+        Optional<Stock> stock = stockService.findOne(id);
         return ResponseUtil.wrapOrNotFound(stock);
     }
 
@@ -113,7 +132,7 @@ public class StockResource {
     @DeleteMapping("/stocks/{id}")
     public ResponseEntity<Void> deleteStock(@PathVariable Long id) {
         log.debug("REST request to delete Stock : {}", id);
-        stockRepository.deleteById(id);
+        stockService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

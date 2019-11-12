@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.SalesAccountBalance;
-import com.alphadevs.pos.repository.SalesAccountBalanceRepository;
+import com.alphadevs.pos.service.SalesAccountBalanceService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.SalesAccountBalanceCriteria;
+import com.alphadevs.pos.service.SalesAccountBalanceQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class SalesAccountBalanceResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final SalesAccountBalanceRepository salesAccountBalanceRepository;
+    private final SalesAccountBalanceService salesAccountBalanceService;
 
-    public SalesAccountBalanceResource(SalesAccountBalanceRepository salesAccountBalanceRepository) {
-        this.salesAccountBalanceRepository = salesAccountBalanceRepository;
+    private final SalesAccountBalanceQueryService salesAccountBalanceQueryService;
+
+    public SalesAccountBalanceResource(SalesAccountBalanceService salesAccountBalanceService, SalesAccountBalanceQueryService salesAccountBalanceQueryService) {
+        this.salesAccountBalanceService = salesAccountBalanceService;
+        this.salesAccountBalanceQueryService = salesAccountBalanceQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class SalesAccountBalanceResource {
         if (salesAccountBalance.getId() != null) {
             throw new BadRequestAlertException("A new salesAccountBalance cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        SalesAccountBalance result = salesAccountBalanceRepository.save(salesAccountBalance);
+        SalesAccountBalance result = salesAccountBalanceService.save(salesAccountBalance);
         return ResponseEntity.created(new URI("/api/sales-account-balances/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class SalesAccountBalanceResource {
         if (salesAccountBalance.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        SalesAccountBalance result = salesAccountBalanceRepository.save(salesAccountBalance);
+        SalesAccountBalance result = salesAccountBalanceService.save(salesAccountBalance);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, salesAccountBalance.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class SalesAccountBalanceResource {
      * {@code GET  /sales-account-balances} : get all the salesAccountBalances.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of salesAccountBalances in body.
      */
     @GetMapping("/sales-account-balances")
-    public List<SalesAccountBalance> getAllSalesAccountBalances() {
-        log.debug("REST request to get all SalesAccountBalances");
-        return salesAccountBalanceRepository.findAll();
+    public ResponseEntity<List<SalesAccountBalance>> getAllSalesAccountBalances(SalesAccountBalanceCriteria criteria) {
+        log.debug("REST request to get SalesAccountBalances by criteria: {}", criteria);
+        List<SalesAccountBalance> entityList = salesAccountBalanceQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /sales-account-balances/count} : count all the salesAccountBalances.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/sales-account-balances/count")
+    public ResponseEntity<Long> countSalesAccountBalances(SalesAccountBalanceCriteria criteria) {
+        log.debug("REST request to count SalesAccountBalances by criteria: {}", criteria);
+        return ResponseEntity.ok().body(salesAccountBalanceQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class SalesAccountBalanceResource {
     @GetMapping("/sales-account-balances/{id}")
     public ResponseEntity<SalesAccountBalance> getSalesAccountBalance(@PathVariable Long id) {
         log.debug("REST request to get SalesAccountBalance : {}", id);
-        Optional<SalesAccountBalance> salesAccountBalance = salesAccountBalanceRepository.findById(id);
+        Optional<SalesAccountBalance> salesAccountBalance = salesAccountBalanceService.findOne(id);
         return ResponseUtil.wrapOrNotFound(salesAccountBalance);
     }
 
@@ -113,7 +132,7 @@ public class SalesAccountBalanceResource {
     @DeleteMapping("/sales-account-balances/{id}")
     public ResponseEntity<Void> deleteSalesAccountBalance(@PathVariable Long id) {
         log.debug("REST request to delete SalesAccountBalance : {}", id);
-        salesAccountBalanceRepository.deleteById(id);
+        salesAccountBalanceService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

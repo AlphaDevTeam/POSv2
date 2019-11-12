@@ -2,8 +2,13 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.JobDetais;
+import com.alphadevs.pos.domain.Items;
+import com.alphadevs.pos.domain.Job;
 import com.alphadevs.pos.repository.JobDetaisRepository;
+import com.alphadevs.pos.service.JobDetaisService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.JobDetaisCriteria;
+import com.alphadevs.pos.service.JobDetaisQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,12 +40,20 @@ public class JobDetaisResourceIT {
 
     private static final Double DEFAULT_JOB_ITEM_PRICE = 1D;
     private static final Double UPDATED_JOB_ITEM_PRICE = 2D;
+    private static final Double SMALLER_JOB_ITEM_PRICE = 1D - 1D;
 
     private static final Integer DEFAULT_JOB_ITEM_QTY = 1;
     private static final Integer UPDATED_JOB_ITEM_QTY = 2;
+    private static final Integer SMALLER_JOB_ITEM_QTY = 1 - 1;
 
     @Autowired
     private JobDetaisRepository jobDetaisRepository;
+
+    @Autowired
+    private JobDetaisService jobDetaisService;
+
+    @Autowired
+    private JobDetaisQueryService jobDetaisQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -64,7 +77,7 @@ public class JobDetaisResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final JobDetaisResource jobDetaisResource = new JobDetaisResource(jobDetaisRepository);
+        final JobDetaisResource jobDetaisResource = new JobDetaisResource(jobDetaisService, jobDetaisQueryService);
         this.restJobDetaisMockMvc = MockMvcBuilders.standaloneSetup(jobDetaisResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -210,6 +223,291 @@ public class JobDetaisResourceIT {
 
     @Test
     @Transactional
+    public void getAllJobDetaisByJobItemPriceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemPrice equals to DEFAULT_JOB_ITEM_PRICE
+        defaultJobDetaisShouldBeFound("jobItemPrice.equals=" + DEFAULT_JOB_ITEM_PRICE);
+
+        // Get all the jobDetaisList where jobItemPrice equals to UPDATED_JOB_ITEM_PRICE
+        defaultJobDetaisShouldNotBeFound("jobItemPrice.equals=" + UPDATED_JOB_ITEM_PRICE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemPriceIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemPrice not equals to DEFAULT_JOB_ITEM_PRICE
+        defaultJobDetaisShouldNotBeFound("jobItemPrice.notEquals=" + DEFAULT_JOB_ITEM_PRICE);
+
+        // Get all the jobDetaisList where jobItemPrice not equals to UPDATED_JOB_ITEM_PRICE
+        defaultJobDetaisShouldBeFound("jobItemPrice.notEquals=" + UPDATED_JOB_ITEM_PRICE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemPriceIsInShouldWork() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemPrice in DEFAULT_JOB_ITEM_PRICE or UPDATED_JOB_ITEM_PRICE
+        defaultJobDetaisShouldBeFound("jobItemPrice.in=" + DEFAULT_JOB_ITEM_PRICE + "," + UPDATED_JOB_ITEM_PRICE);
+
+        // Get all the jobDetaisList where jobItemPrice equals to UPDATED_JOB_ITEM_PRICE
+        defaultJobDetaisShouldNotBeFound("jobItemPrice.in=" + UPDATED_JOB_ITEM_PRICE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemPriceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemPrice is not null
+        defaultJobDetaisShouldBeFound("jobItemPrice.specified=true");
+
+        // Get all the jobDetaisList where jobItemPrice is null
+        defaultJobDetaisShouldNotBeFound("jobItemPrice.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemPriceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemPrice is greater than or equal to DEFAULT_JOB_ITEM_PRICE
+        defaultJobDetaisShouldBeFound("jobItemPrice.greaterThanOrEqual=" + DEFAULT_JOB_ITEM_PRICE);
+
+        // Get all the jobDetaisList where jobItemPrice is greater than or equal to UPDATED_JOB_ITEM_PRICE
+        defaultJobDetaisShouldNotBeFound("jobItemPrice.greaterThanOrEqual=" + UPDATED_JOB_ITEM_PRICE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemPriceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemPrice is less than or equal to DEFAULT_JOB_ITEM_PRICE
+        defaultJobDetaisShouldBeFound("jobItemPrice.lessThanOrEqual=" + DEFAULT_JOB_ITEM_PRICE);
+
+        // Get all the jobDetaisList where jobItemPrice is less than or equal to SMALLER_JOB_ITEM_PRICE
+        defaultJobDetaisShouldNotBeFound("jobItemPrice.lessThanOrEqual=" + SMALLER_JOB_ITEM_PRICE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemPriceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemPrice is less than DEFAULT_JOB_ITEM_PRICE
+        defaultJobDetaisShouldNotBeFound("jobItemPrice.lessThan=" + DEFAULT_JOB_ITEM_PRICE);
+
+        // Get all the jobDetaisList where jobItemPrice is less than UPDATED_JOB_ITEM_PRICE
+        defaultJobDetaisShouldBeFound("jobItemPrice.lessThan=" + UPDATED_JOB_ITEM_PRICE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemPriceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemPrice is greater than DEFAULT_JOB_ITEM_PRICE
+        defaultJobDetaisShouldNotBeFound("jobItemPrice.greaterThan=" + DEFAULT_JOB_ITEM_PRICE);
+
+        // Get all the jobDetaisList where jobItemPrice is greater than SMALLER_JOB_ITEM_PRICE
+        defaultJobDetaisShouldBeFound("jobItemPrice.greaterThan=" + SMALLER_JOB_ITEM_PRICE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemQtyIsEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemQty equals to DEFAULT_JOB_ITEM_QTY
+        defaultJobDetaisShouldBeFound("jobItemQty.equals=" + DEFAULT_JOB_ITEM_QTY);
+
+        // Get all the jobDetaisList where jobItemQty equals to UPDATED_JOB_ITEM_QTY
+        defaultJobDetaisShouldNotBeFound("jobItemQty.equals=" + UPDATED_JOB_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemQtyIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemQty not equals to DEFAULT_JOB_ITEM_QTY
+        defaultJobDetaisShouldNotBeFound("jobItemQty.notEquals=" + DEFAULT_JOB_ITEM_QTY);
+
+        // Get all the jobDetaisList where jobItemQty not equals to UPDATED_JOB_ITEM_QTY
+        defaultJobDetaisShouldBeFound("jobItemQty.notEquals=" + UPDATED_JOB_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemQtyIsInShouldWork() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemQty in DEFAULT_JOB_ITEM_QTY or UPDATED_JOB_ITEM_QTY
+        defaultJobDetaisShouldBeFound("jobItemQty.in=" + DEFAULT_JOB_ITEM_QTY + "," + UPDATED_JOB_ITEM_QTY);
+
+        // Get all the jobDetaisList where jobItemQty equals to UPDATED_JOB_ITEM_QTY
+        defaultJobDetaisShouldNotBeFound("jobItemQty.in=" + UPDATED_JOB_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemQtyIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemQty is not null
+        defaultJobDetaisShouldBeFound("jobItemQty.specified=true");
+
+        // Get all the jobDetaisList where jobItemQty is null
+        defaultJobDetaisShouldNotBeFound("jobItemQty.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemQtyIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemQty is greater than or equal to DEFAULT_JOB_ITEM_QTY
+        defaultJobDetaisShouldBeFound("jobItemQty.greaterThanOrEqual=" + DEFAULT_JOB_ITEM_QTY);
+
+        // Get all the jobDetaisList where jobItemQty is greater than or equal to UPDATED_JOB_ITEM_QTY
+        defaultJobDetaisShouldNotBeFound("jobItemQty.greaterThanOrEqual=" + UPDATED_JOB_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemQtyIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemQty is less than or equal to DEFAULT_JOB_ITEM_QTY
+        defaultJobDetaisShouldBeFound("jobItemQty.lessThanOrEqual=" + DEFAULT_JOB_ITEM_QTY);
+
+        // Get all the jobDetaisList where jobItemQty is less than or equal to SMALLER_JOB_ITEM_QTY
+        defaultJobDetaisShouldNotBeFound("jobItemQty.lessThanOrEqual=" + SMALLER_JOB_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemQtyIsLessThanSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemQty is less than DEFAULT_JOB_ITEM_QTY
+        defaultJobDetaisShouldNotBeFound("jobItemQty.lessThan=" + DEFAULT_JOB_ITEM_QTY);
+
+        // Get all the jobDetaisList where jobItemQty is less than UPDATED_JOB_ITEM_QTY
+        defaultJobDetaisShouldBeFound("jobItemQty.lessThan=" + UPDATED_JOB_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobItemQtyIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+
+        // Get all the jobDetaisList where jobItemQty is greater than DEFAULT_JOB_ITEM_QTY
+        defaultJobDetaisShouldNotBeFound("jobItemQty.greaterThan=" + DEFAULT_JOB_ITEM_QTY);
+
+        // Get all the jobDetaisList where jobItemQty is greater than SMALLER_JOB_ITEM_QTY
+        defaultJobDetaisShouldBeFound("jobItemQty.greaterThan=" + SMALLER_JOB_ITEM_QTY);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByItemIsEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+        Items item = ItemsResourceIT.createEntity(em);
+        em.persist(item);
+        em.flush();
+        jobDetais.setItem(item);
+        jobDetaisRepository.saveAndFlush(jobDetais);
+        Long itemId = item.getId();
+
+        // Get all the jobDetaisList where item equals to itemId
+        defaultJobDetaisShouldBeFound("itemId.equals=" + itemId);
+
+        // Get all the jobDetaisList where item equals to itemId + 1
+        defaultJobDetaisShouldNotBeFound("itemId.equals=" + (itemId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllJobDetaisByJobIsEqualToSomething() throws Exception {
+        // Initialize the database
+        jobDetaisRepository.saveAndFlush(jobDetais);
+        Job job = JobResourceIT.createEntity(em);
+        em.persist(job);
+        em.flush();
+        jobDetais.setJob(job);
+        jobDetaisRepository.saveAndFlush(jobDetais);
+        Long jobId = job.getId();
+
+        // Get all the jobDetaisList where job equals to jobId
+        defaultJobDetaisShouldBeFound("jobId.equals=" + jobId);
+
+        // Get all the jobDetaisList where job equals to jobId + 1
+        defaultJobDetaisShouldNotBeFound("jobId.equals=" + (jobId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultJobDetaisShouldBeFound(String filter) throws Exception {
+        restJobDetaisMockMvc.perform(get("/api/job-detais?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(jobDetais.getId().intValue())))
+            .andExpect(jsonPath("$.[*].jobItemPrice").value(hasItem(DEFAULT_JOB_ITEM_PRICE.doubleValue())))
+            .andExpect(jsonPath("$.[*].jobItemQty").value(hasItem(DEFAULT_JOB_ITEM_QTY)));
+
+        // Check, that the count call also returns 1
+        restJobDetaisMockMvc.perform(get("/api/job-detais/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultJobDetaisShouldNotBeFound(String filter) throws Exception {
+        restJobDetaisMockMvc.perform(get("/api/job-detais?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restJobDetaisMockMvc.perform(get("/api/job-detais/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingJobDetais() throws Exception {
         // Get the jobDetais
         restJobDetaisMockMvc.perform(get("/api/job-detais/{id}", Long.MAX_VALUE))
@@ -220,7 +518,7 @@ public class JobDetaisResourceIT {
     @Transactional
     public void updateJobDetais() throws Exception {
         // Initialize the database
-        jobDetaisRepository.saveAndFlush(jobDetais);
+        jobDetaisService.save(jobDetais);
 
         int databaseSizeBeforeUpdate = jobDetaisRepository.findAll().size();
 
@@ -267,7 +565,7 @@ public class JobDetaisResourceIT {
     @Transactional
     public void deleteJobDetais() throws Exception {
         // Initialize the database
-        jobDetaisRepository.saveAndFlush(jobDetais);
+        jobDetaisService.save(jobDetais);
 
         int databaseSizeBeforeDelete = jobDetaisRepository.findAll().size();
 

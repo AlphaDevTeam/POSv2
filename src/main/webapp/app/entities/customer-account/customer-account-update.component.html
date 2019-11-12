@@ -99,7 +99,7 @@
                     <label class="form-control-label" for="field_customer">Customer</label>
                     <select class="form-control" id="field_customer" name="customer" formControlName="customer">
                         <option [ngValue]="null"></option>
-                        <option [ngValue]="customerOption.id === editForm.get('customer').value?.id ? editForm.get('customer').value : customerOption" *ngFor="let customerOption of customers; trackBy: trackCustomerById">{{customerOption.id}}</option>
+                        <option [ngValue]="customerOption.id === editForm.get('customer').value?.id ? editForm.get('customer').value : customerOption" *ngFor="let customerOption of customers; trackBy: trackCustomerById">{{customerOption.customerCode}}</option>
                     </select>
                 </div>
             </div>

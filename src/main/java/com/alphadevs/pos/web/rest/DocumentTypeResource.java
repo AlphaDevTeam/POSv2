@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.DocumentType;
-import com.alphadevs.pos.repository.DocumentTypeRepository;
+import com.alphadevs.pos.service.DocumentTypeService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.DocumentTypeCriteria;
+import com.alphadevs.pos.service.DocumentTypeQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class DocumentTypeResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final DocumentTypeRepository documentTypeRepository;
+    private final DocumentTypeService documentTypeService;
 
-    public DocumentTypeResource(DocumentTypeRepository documentTypeRepository) {
-        this.documentTypeRepository = documentTypeRepository;
+    private final DocumentTypeQueryService documentTypeQueryService;
+
+    public DocumentTypeResource(DocumentTypeService documentTypeService, DocumentTypeQueryService documentTypeQueryService) {
+        this.documentTypeService = documentTypeService;
+        this.documentTypeQueryService = documentTypeQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class DocumentTypeResource {
         if (documentType.getId() != null) {
             throw new BadRequestAlertException("A new documentType cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        DocumentType result = documentTypeRepository.save(documentType);
+        DocumentType result = documentTypeService.save(documentType);
         return ResponseEntity.created(new URI("/api/document-types/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class DocumentTypeResource {
         if (documentType.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        DocumentType result = documentTypeRepository.save(documentType);
+        DocumentType result = documentTypeService.save(documentType);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, documentType.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class DocumentTypeResource {
      * {@code GET  /document-types} : get all the documentTypes.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of documentTypes in body.
      */
     @GetMapping("/document-types")
-    public List<DocumentType> getAllDocumentTypes() {
-        log.debug("REST request to get all DocumentTypes");
-        return documentTypeRepository.findAll();
+    public ResponseEntity<List<DocumentType>> getAllDocumentTypes(DocumentTypeCriteria criteria) {
+        log.debug("REST request to get DocumentTypes by criteria: {}", criteria);
+        List<DocumentType> entityList = documentTypeQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /document-types/count} : count all the documentTypes.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/document-types/count")
+    public ResponseEntity<Long> countDocumentTypes(DocumentTypeCriteria criteria) {
+        log.debug("REST request to count DocumentTypes by criteria: {}", criteria);
+        return ResponseEntity.ok().body(documentTypeQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class DocumentTypeResource {
     @GetMapping("/document-types/{id}")
     public ResponseEntity<DocumentType> getDocumentType(@PathVariable Long id) {
         log.debug("REST request to get DocumentType : {}", id);
-        Optional<DocumentType> documentType = documentTypeRepository.findById(id);
+        Optional<DocumentType> documentType = documentTypeService.findOne(id);
         return ResponseUtil.wrapOrNotFound(documentType);
     }
 
@@ -113,7 +132,7 @@ public class DocumentTypeResource {
     @DeleteMapping("/document-types/{id}")
     public ResponseEntity<Void> deleteDocumentType(@PathVariable Long id) {
         log.debug("REST request to delete DocumentType : {}", id);
-        documentTypeRepository.deleteById(id);
+        documentTypeService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

@@ -16,13 +16,13 @@
                 <dt><span>Item</span></dt>
                 <dd>
                     <div *ngIf="jobDetais.item">
-                        <a [routerLink]="['/items', jobDetais.item?.id, 'view']">{{jobDetais.item?.id}}</a>
+                        <a [routerLink]="['/items', jobDetais.item?.id, 'view']">{{jobDetais.item?.itemCode}}</a>
                     </div>
                 </dd>
                 <dt><span>Job</span></dt>
                 <dd>
                     <div *ngIf="jobDetais.job">
-                        <a [routerLink]="['/job', jobDetais.job?.id, 'view']">{{jobDetais.job?.id}}</a>
+                        <a [routerLink]="['/job', jobDetais.job?.id, 'view']">{{jobDetais.job?.jobCode}}</a>
                     </div>
                 </dd>
             </dl>

@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.TransactionType;
-import com.alphadevs.pos.repository.TransactionTypeRepository;
+import com.alphadevs.pos.service.TransactionTypeService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.TransactionTypeCriteria;
+import com.alphadevs.pos.service.TransactionTypeQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class TransactionTypeResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final TransactionTypeRepository transactionTypeRepository;
+    private final TransactionTypeService transactionTypeService;
 
-    public TransactionTypeResource(TransactionTypeRepository transactionTypeRepository) {
-        this.transactionTypeRepository = transactionTypeRepository;
+    private final TransactionTypeQueryService transactionTypeQueryService;
+
+    public TransactionTypeResource(TransactionTypeService transactionTypeService, TransactionTypeQueryService transactionTypeQueryService) {
+        this.transactionTypeService = transactionTypeService;
+        this.transactionTypeQueryService = transactionTypeQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class TransactionTypeResource {
         if (transactionType.getId() != null) {
             throw new BadRequestAlertException("A new transactionType cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        TransactionType result = transactionTypeRepository.save(transactionType);
+        TransactionType result = transactionTypeService.save(transactionType);
         return ResponseEntity.created(new URI("/api/transaction-types/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class TransactionTypeResource {
         if (transactionType.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        TransactionType result = transactionTypeRepository.save(transactionType);
+        TransactionType result = transactionTypeService.save(transactionType);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, transactionType.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class TransactionTypeResource {
      * {@code GET  /transaction-types} : get all the transactionTypes.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of transactionTypes in body.
      */
     @GetMapping("/transaction-types")
-    public List<TransactionType> getAllTransactionTypes() {
-        log.debug("REST request to get all TransactionTypes");
-        return transactionTypeRepository.findAll();
+    public ResponseEntity<List<TransactionType>> getAllTransactionTypes(TransactionTypeCriteria criteria) {
+        log.debug("REST request to get TransactionTypes by criteria: {}", criteria);
+        List<TransactionType> entityList = transactionTypeQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /transaction-types/count} : count all the transactionTypes.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/transaction-types/count")
+    public ResponseEntity<Long> countTransactionTypes(TransactionTypeCriteria criteria) {
+        log.debug("REST request to count TransactionTypes by criteria: {}", criteria);
+        return ResponseEntity.ok().body(transactionTypeQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class TransactionTypeResource {
     @GetMapping("/transaction-types/{id}")
     public ResponseEntity<TransactionType> getTransactionType(@PathVariable Long id) {
         log.debug("REST request to get TransactionType : {}", id);
-        Optional<TransactionType> transactionType = transactionTypeRepository.findById(id);
+        Optional<TransactionType> transactionType = transactionTypeService.findOne(id);
         return ResponseUtil.wrapOrNotFound(transactionType);
     }
 
@@ -113,7 +132,7 @@ public class TransactionTypeResource {
     @DeleteMapping("/transaction-types/{id}")
     public ResponseEntity<Void> deleteTransactionType(@PathVariable Long id) {
         log.debug("REST request to delete TransactionType : {}", id);
-        transactionTypeRepository.deleteById(id);
+        transactionTypeService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

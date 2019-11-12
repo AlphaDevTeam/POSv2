@@ -10,8 +10,8 @@ import * as moment from 'moment';
 import { JhiAlertService } from 'ng-jhipster';
 import { IItems, Items } from 'app/shared/model/items.model';
 import { ItemsService } from './items.service';
-import { IDesings } from 'app/shared/model/desings.model';
-import { DesingsService } from 'app/entities/desings/desings.service';
+import { IDesigns } from 'app/shared/model/designs.model';
+import { DesignsService } from 'app/entities/designs/designs.service';
 import { IProducts } from 'app/shared/model/products.model';
 import { ProductsService } from 'app/entities/products/products.service';
 import { ILocation } from 'app/shared/model/location.model';
@@ -24,7 +24,7 @@ import { LocationService } from 'app/entities/location/location.service';
 export class ItemsUpdateComponent implements OnInit {
   isSaving: boolean;
 
-  desings: IDesings[];
+  designs: IDesigns[];
 
   products: IProducts[];
 
@@ -52,7 +52,7 @@ export class ItemsUpdateComponent implements OnInit {
   constructor(
     protected jhiAlertService: JhiAlertService,
     protected itemsService: ItemsService,
-    protected desingsService: DesingsService,
+    protected designsService: DesignsService,
     protected productsService: ProductsService,
     protected locationService: LocationService,
     protected activatedRoute: ActivatedRoute,
@@ -64,13 +64,13 @@ export class ItemsUpdateComponent implements OnInit {
     this.activatedRoute.data.subscribe(({ items }) => {
       this.updateForm(items);
     });
-    this.desingsService
+    this.designsService
       .query()
       .pipe(
-        filter((mayBeOk: HttpResponse<IDesings[]>) => mayBeOk.ok),
-        map((response: HttpResponse<IDesings[]>) => response.body)
+        filter((mayBeOk: HttpResponse<IDesigns[]>) => mayBeOk.ok),
+        map((response: HttpResponse<IDesigns[]>) => response.body)
       )
-      .subscribe((res: IDesings[]) => (this.desings = res), (res: HttpErrorResponse) => this.onError(res.message));
+      .subscribe((res: IDesigns[]) => (this.designs = res), (res: HttpErrorResponse) => this.onError(res.message));
     this.productsService
       .query()
       .pipe(
@@ -88,13 +88,13 @@ export class ItemsUpdateComponent implements OnInit {
   }
 
   updateProduct(productID: number) {
-    this.desingsService
+    this.designsService
       .query({ 'relatedProductId.equals': productID })
       .pipe(
-        filter((mayBeOk: HttpResponse<IDesings[]>) => mayBeOk.ok),
-        map((response: HttpResponse<IDesings[]>) => response.body)
+        filter((mayBeOk: HttpResponse<IDesigns[]>) => mayBeOk.ok),
+        map((response: HttpResponse<IDesigns[]>) => response.body)
       )
-      .subscribe((res: IDesings[]) => (this.desings = res), (res: HttpErrorResponse) => this.onError(res.message));
+      .subscribe((res: IDesigns[]) => (this.designs = res), (res: HttpErrorResponse) => this.onError(res.message));
   }
 
   updateLocation(locationID: number) {
@@ -176,7 +176,7 @@ export class ItemsUpdateComponent implements OnInit {
     this.jhiAlertService.error(errorMessage, null, null);
   }
 
-  trackDesingsById(index: number, item: IDesings) {
+  trackDesignsById(index: number, item: IDesigns) {
     return item.id;
   }
 

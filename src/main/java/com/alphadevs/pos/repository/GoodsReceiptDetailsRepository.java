@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface GoodsReceiptDetailsRepository extends JpaRepository<GoodsReceiptDetails, Long> {
+public interface GoodsReceiptDetailsRepository extends JpaRepository<GoodsReceiptDetails, Long>, JpaSpecificationExecutor<GoodsReceiptDetails> {
 
 }

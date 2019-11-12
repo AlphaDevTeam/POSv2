@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.CashBookBalance;
-import com.alphadevs.pos.repository.CashBookBalanceRepository;
+import com.alphadevs.pos.service.CashBookBalanceService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.CashBookBalanceCriteria;
+import com.alphadevs.pos.service.CashBookBalanceQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class CashBookBalanceResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final CashBookBalanceRepository cashBookBalanceRepository;
+    private final CashBookBalanceService cashBookBalanceService;
 
-    public CashBookBalanceResource(CashBookBalanceRepository cashBookBalanceRepository) {
-        this.cashBookBalanceRepository = cashBookBalanceRepository;
+    private final CashBookBalanceQueryService cashBookBalanceQueryService;
+
+    public CashBookBalanceResource(CashBookBalanceService cashBookBalanceService, CashBookBalanceQueryService cashBookBalanceQueryService) {
+        this.cashBookBalanceService = cashBookBalanceService;
+        this.cashBookBalanceQueryService = cashBookBalanceQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class CashBookBalanceResource {
         if (cashBookBalance.getId() != null) {
             throw new BadRequestAlertException("A new cashBookBalance cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        CashBookBalance result = cashBookBalanceRepository.save(cashBookBalance);
+        CashBookBalance result = cashBookBalanceService.save(cashBookBalance);
         return ResponseEntity.created(new URI("/api/cash-book-balances/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class CashBookBalanceResource {
         if (cashBookBalance.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        CashBookBalance result = cashBookBalanceRepository.save(cashBookBalance);
+        CashBookBalance result = cashBookBalanceService.save(cashBookBalance);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, cashBookBalance.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class CashBookBalanceResource {
      * {@code GET  /cash-book-balances} : get all the cashBookBalances.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of cashBookBalances in body.
      */
     @GetMapping("/cash-book-balances")
-    public List<CashBookBalance> getAllCashBookBalances() {
-        log.debug("REST request to get all CashBookBalances");
-        return cashBookBalanceRepository.findAll();
+    public ResponseEntity<List<CashBookBalance>> getAllCashBookBalances(CashBookBalanceCriteria criteria) {
+        log.debug("REST request to get CashBookBalances by criteria: {}", criteria);
+        List<CashBookBalance> entityList = cashBookBalanceQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /cash-book-balances/count} : count all the cashBookBalances.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/cash-book-balances/count")
+    public ResponseEntity<Long> countCashBookBalances(CashBookBalanceCriteria criteria) {
+        log.debug("REST request to count CashBookBalances by criteria: {}", criteria);
+        return ResponseEntity.ok().body(cashBookBalanceQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class CashBookBalanceResource {
     @GetMapping("/cash-book-balances/{id}")
     public ResponseEntity<CashBookBalance> getCashBookBalance(@PathVariable Long id) {
         log.debug("REST request to get CashBookBalance : {}", id);
-        Optional<CashBookBalance> cashBookBalance = cashBookBalanceRepository.findById(id);
+        Optional<CashBookBalance> cashBookBalance = cashBookBalanceService.findOne(id);
         return ResponseUtil.wrapOrNotFound(cashBookBalance);
     }
 
@@ -113,7 +132,7 @@ public class CashBookBalanceResource {
     @DeleteMapping("/cash-book-balances/{id}")
     public ResponseEntity<Void> deleteCashBookBalance(@PathVariable Long id) {
         log.debug("REST request to delete CashBookBalance : {}", id);
-        cashBookBalanceRepository.deleteById(id);
+        cashBookBalanceService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

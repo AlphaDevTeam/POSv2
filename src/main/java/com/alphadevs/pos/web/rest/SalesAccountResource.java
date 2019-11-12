@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.SalesAccount;
-import com.alphadevs.pos.repository.SalesAccountRepository;
+import com.alphadevs.pos.service.SalesAccountService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.SalesAccountCriteria;
+import com.alphadevs.pos.service.SalesAccountQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class SalesAccountResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final SalesAccountRepository salesAccountRepository;
+    private final SalesAccountService salesAccountService;
 
-    public SalesAccountResource(SalesAccountRepository salesAccountRepository) {
-        this.salesAccountRepository = salesAccountRepository;
+    private final SalesAccountQueryService salesAccountQueryService;
+
+    public SalesAccountResource(SalesAccountService salesAccountService, SalesAccountQueryService salesAccountQueryService) {
+        this.salesAccountService = salesAccountService;
+        this.salesAccountQueryService = salesAccountQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class SalesAccountResource {
         if (salesAccount.getId() != null) {
             throw new BadRequestAlertException("A new salesAccount cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        SalesAccount result = salesAccountRepository.save(salesAccount);
+        SalesAccount result = salesAccountService.save(salesAccount);
         return ResponseEntity.created(new URI("/api/sales-accounts/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class SalesAccountResource {
         if (salesAccount.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        SalesAccount result = salesAccountRepository.save(salesAccount);
+        SalesAccount result = salesAccountService.save(salesAccount);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, salesAccount.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class SalesAccountResource {
      * {@code GET  /sales-accounts} : get all the salesAccounts.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of salesAccounts in body.
      */
     @GetMapping("/sales-accounts")
-    public List<SalesAccount> getAllSalesAccounts() {
-        log.debug("REST request to get all SalesAccounts");
-        return salesAccountRepository.findAll();
+    public ResponseEntity<List<SalesAccount>> getAllSalesAccounts(SalesAccountCriteria criteria) {
+        log.debug("REST request to get SalesAccounts by criteria: {}", criteria);
+        List<SalesAccount> entityList = salesAccountQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /sales-accounts/count} : count all the salesAccounts.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/sales-accounts/count")
+    public ResponseEntity<Long> countSalesAccounts(SalesAccountCriteria criteria) {
+        log.debug("REST request to count SalesAccounts by criteria: {}", criteria);
+        return ResponseEntity.ok().body(salesAccountQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class SalesAccountResource {
     @GetMapping("/sales-accounts/{id}")
     public ResponseEntity<SalesAccount> getSalesAccount(@PathVariable Long id) {
         log.debug("REST request to get SalesAccount : {}", id);
-        Optional<SalesAccount> salesAccount = salesAccountRepository.findById(id);
+        Optional<SalesAccount> salesAccount = salesAccountService.findOne(id);
         return ResponseUtil.wrapOrNotFound(salesAccount);
     }
 
@@ -113,7 +132,7 @@ public class SalesAccountResource {
     @DeleteMapping("/sales-accounts/{id}")
     public ResponseEntity<Void> deleteSalesAccount(@PathVariable Long id) {
         log.debug("REST request to delete SalesAccount : {}", id);
-        salesAccountRepository.deleteById(id);
+        salesAccountService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

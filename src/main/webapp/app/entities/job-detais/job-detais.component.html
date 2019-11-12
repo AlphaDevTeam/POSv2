@@ -33,12 +33,12 @@
                 <td>{{jobDetais.jobItemQty}}</td>
                 <td>
                     <div *ngIf="jobDetais.item">
-                        <a [routerLink]="['/items', jobDetais.item?.id, 'view' ]" >{{jobDetais.item?.id}}</a>
+                        <a [routerLink]="['/items', jobDetais.item?.id, 'view' ]" >{{jobDetais.item?.itemCode}}</a>
                     </div>
                 </td>
                 <td>
                     <div *ngIf="jobDetais.job">
-                        <a [routerLink]="['/job', jobDetais.job?.id, 'view' ]" >{{jobDetais.job?.id}}</a>
+                        <a [routerLink]="['/job', jobDetais.job?.id, 'view' ]" >{{jobDetais.job?.jobCode}}</a>
                     </div>
                 </td>
                 <td class="text-right">

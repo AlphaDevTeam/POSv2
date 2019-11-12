@@ -2,8 +2,12 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.JobStatus;
+import com.alphadevs.pos.domain.Location;
 import com.alphadevs.pos.repository.JobStatusRepository;
+import com.alphadevs.pos.service.JobStatusService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.JobStatusCriteria;
+import com.alphadevs.pos.service.JobStatusQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +50,12 @@ public class JobStatusResourceIT {
     private JobStatusRepository jobStatusRepository;
 
     @Autowired
+    private JobStatusService jobStatusService;
+
+    @Autowired
+    private JobStatusQueryService jobStatusQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -67,7 +77,7 @@ public class JobStatusResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final JobStatusResource jobStatusResource = new JobStatusResource(jobStatusRepository);
+        final JobStatusResource jobStatusResource = new JobStatusResource(jobStatusService, jobStatusQueryService);
         this.restJobStatusMockMvc = MockMvcBuilders.standaloneSetup(jobStatusResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -200,6 +210,270 @@ public class JobStatusResourceIT {
 
     @Test
     @Transactional
+    public void getAllJobStatusesByJobStatusCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusCode equals to DEFAULT_JOB_STATUS_CODE
+        defaultJobStatusShouldBeFound("jobStatusCode.equals=" + DEFAULT_JOB_STATUS_CODE);
+
+        // Get all the jobStatusList where jobStatusCode equals to UPDATED_JOB_STATUS_CODE
+        defaultJobStatusShouldNotBeFound("jobStatusCode.equals=" + UPDATED_JOB_STATUS_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusCodeIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusCode not equals to DEFAULT_JOB_STATUS_CODE
+        defaultJobStatusShouldNotBeFound("jobStatusCode.notEquals=" + DEFAULT_JOB_STATUS_CODE);
+
+        // Get all the jobStatusList where jobStatusCode not equals to UPDATED_JOB_STATUS_CODE
+        defaultJobStatusShouldBeFound("jobStatusCode.notEquals=" + UPDATED_JOB_STATUS_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusCode in DEFAULT_JOB_STATUS_CODE or UPDATED_JOB_STATUS_CODE
+        defaultJobStatusShouldBeFound("jobStatusCode.in=" + DEFAULT_JOB_STATUS_CODE + "," + UPDATED_JOB_STATUS_CODE);
+
+        // Get all the jobStatusList where jobStatusCode equals to UPDATED_JOB_STATUS_CODE
+        defaultJobStatusShouldNotBeFound("jobStatusCode.in=" + UPDATED_JOB_STATUS_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusCode is not null
+        defaultJobStatusShouldBeFound("jobStatusCode.specified=true");
+
+        // Get all the jobStatusList where jobStatusCode is null
+        defaultJobStatusShouldNotBeFound("jobStatusCode.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusCodeContainsSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusCode contains DEFAULT_JOB_STATUS_CODE
+        defaultJobStatusShouldBeFound("jobStatusCode.contains=" + DEFAULT_JOB_STATUS_CODE);
+
+        // Get all the jobStatusList where jobStatusCode contains UPDATED_JOB_STATUS_CODE
+        defaultJobStatusShouldNotBeFound("jobStatusCode.contains=" + UPDATED_JOB_STATUS_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusCodeNotContainsSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusCode does not contain DEFAULT_JOB_STATUS_CODE
+        defaultJobStatusShouldNotBeFound("jobStatusCode.doesNotContain=" + DEFAULT_JOB_STATUS_CODE);
+
+        // Get all the jobStatusList where jobStatusCode does not contain UPDATED_JOB_STATUS_CODE
+        defaultJobStatusShouldBeFound("jobStatusCode.doesNotContain=" + UPDATED_JOB_STATUS_CODE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusDescriptionIsEqualToSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusDescription equals to DEFAULT_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldBeFound("jobStatusDescription.equals=" + DEFAULT_JOB_STATUS_DESCRIPTION);
+
+        // Get all the jobStatusList where jobStatusDescription equals to UPDATED_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldNotBeFound("jobStatusDescription.equals=" + UPDATED_JOB_STATUS_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusDescriptionIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusDescription not equals to DEFAULT_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldNotBeFound("jobStatusDescription.notEquals=" + DEFAULT_JOB_STATUS_DESCRIPTION);
+
+        // Get all the jobStatusList where jobStatusDescription not equals to UPDATED_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldBeFound("jobStatusDescription.notEquals=" + UPDATED_JOB_STATUS_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusDescriptionIsInShouldWork() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusDescription in DEFAULT_JOB_STATUS_DESCRIPTION or UPDATED_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldBeFound("jobStatusDescription.in=" + DEFAULT_JOB_STATUS_DESCRIPTION + "," + UPDATED_JOB_STATUS_DESCRIPTION);
+
+        // Get all the jobStatusList where jobStatusDescription equals to UPDATED_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldNotBeFound("jobStatusDescription.in=" + UPDATED_JOB_STATUS_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusDescriptionIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusDescription is not null
+        defaultJobStatusShouldBeFound("jobStatusDescription.specified=true");
+
+        // Get all the jobStatusList where jobStatusDescription is null
+        defaultJobStatusShouldNotBeFound("jobStatusDescription.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusDescriptionContainsSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusDescription contains DEFAULT_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldBeFound("jobStatusDescription.contains=" + DEFAULT_JOB_STATUS_DESCRIPTION);
+
+        // Get all the jobStatusList where jobStatusDescription contains UPDATED_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldNotBeFound("jobStatusDescription.contains=" + UPDATED_JOB_STATUS_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByJobStatusDescriptionNotContainsSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where jobStatusDescription does not contain DEFAULT_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldNotBeFound("jobStatusDescription.doesNotContain=" + DEFAULT_JOB_STATUS_DESCRIPTION);
+
+        // Get all the jobStatusList where jobStatusDescription does not contain UPDATED_JOB_STATUS_DESCRIPTION
+        defaultJobStatusShouldBeFound("jobStatusDescription.doesNotContain=" + UPDATED_JOB_STATUS_DESCRIPTION);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByIsActiveIsEqualToSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where isActive equals to DEFAULT_IS_ACTIVE
+        defaultJobStatusShouldBeFound("isActive.equals=" + DEFAULT_IS_ACTIVE);
+
+        // Get all the jobStatusList where isActive equals to UPDATED_IS_ACTIVE
+        defaultJobStatusShouldNotBeFound("isActive.equals=" + UPDATED_IS_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByIsActiveIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where isActive not equals to DEFAULT_IS_ACTIVE
+        defaultJobStatusShouldNotBeFound("isActive.notEquals=" + DEFAULT_IS_ACTIVE);
+
+        // Get all the jobStatusList where isActive not equals to UPDATED_IS_ACTIVE
+        defaultJobStatusShouldBeFound("isActive.notEquals=" + UPDATED_IS_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByIsActiveIsInShouldWork() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where isActive in DEFAULT_IS_ACTIVE or UPDATED_IS_ACTIVE
+        defaultJobStatusShouldBeFound("isActive.in=" + DEFAULT_IS_ACTIVE + "," + UPDATED_IS_ACTIVE);
+
+        // Get all the jobStatusList where isActive equals to UPDATED_IS_ACTIVE
+        defaultJobStatusShouldNotBeFound("isActive.in=" + UPDATED_IS_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByIsActiveIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+
+        // Get all the jobStatusList where isActive is not null
+        defaultJobStatusShouldBeFound("isActive.specified=true");
+
+        // Get all the jobStatusList where isActive is null
+        defaultJobStatusShouldNotBeFound("isActive.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllJobStatusesByLocationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        jobStatusRepository.saveAndFlush(jobStatus);
+        Location location = LocationResourceIT.createEntity(em);
+        em.persist(location);
+        em.flush();
+        jobStatus.setLocation(location);
+        jobStatusRepository.saveAndFlush(jobStatus);
+        Long locationId = location.getId();
+
+        // Get all the jobStatusList where location equals to locationId
+        defaultJobStatusShouldBeFound("locationId.equals=" + locationId);
+
+        // Get all the jobStatusList where location equals to locationId + 1
+        defaultJobStatusShouldNotBeFound("locationId.equals=" + (locationId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultJobStatusShouldBeFound(String filter) throws Exception {
+        restJobStatusMockMvc.perform(get("/api/job-statuses?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(jobStatus.getId().intValue())))
+            .andExpect(jsonPath("$.[*].jobStatusCode").value(hasItem(DEFAULT_JOB_STATUS_CODE)))
+            .andExpect(jsonPath("$.[*].jobStatusDescription").value(hasItem(DEFAULT_JOB_STATUS_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].isActive").value(hasItem(DEFAULT_IS_ACTIVE.booleanValue())));
+
+        // Check, that the count call also returns 1
+        restJobStatusMockMvc.perform(get("/api/job-statuses/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultJobStatusShouldNotBeFound(String filter) throws Exception {
+        restJobStatusMockMvc.perform(get("/api/job-statuses?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restJobStatusMockMvc.perform(get("/api/job-statuses/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingJobStatus() throws Exception {
         // Get the jobStatus
         restJobStatusMockMvc.perform(get("/api/job-statuses/{id}", Long.MAX_VALUE))
@@ -210,7 +484,7 @@ public class JobStatusResourceIT {
     @Transactional
     public void updateJobStatus() throws Exception {
         // Initialize the database
-        jobStatusRepository.saveAndFlush(jobStatus);
+        jobStatusService.save(jobStatus);
 
         int databaseSizeBeforeUpdate = jobStatusRepository.findAll().size();
 
@@ -259,7 +533,7 @@ public class JobStatusResourceIT {
     @Transactional
     public void deleteJobStatus() throws Exception {
         // Initialize the database
-        jobStatusRepository.saveAndFlush(jobStatus);
+        jobStatusService.save(jobStatus);
 
         int databaseSizeBeforeDelete = jobStatusRepository.findAll().size();
 

@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.PurchaseOrderDetails;
-import com.alphadevs.pos.repository.PurchaseOrderDetailsRepository;
+import com.alphadevs.pos.service.PurchaseOrderDetailsService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.PurchaseOrderDetailsCriteria;
+import com.alphadevs.pos.service.PurchaseOrderDetailsQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class PurchaseOrderDetailsResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final PurchaseOrderDetailsRepository purchaseOrderDetailsRepository;
+    private final PurchaseOrderDetailsService purchaseOrderDetailsService;
 
-    public PurchaseOrderDetailsResource(PurchaseOrderDetailsRepository purchaseOrderDetailsRepository) {
-        this.purchaseOrderDetailsRepository = purchaseOrderDetailsRepository;
+    private final PurchaseOrderDetailsQueryService purchaseOrderDetailsQueryService;
+
+    public PurchaseOrderDetailsResource(PurchaseOrderDetailsService purchaseOrderDetailsService, PurchaseOrderDetailsQueryService purchaseOrderDetailsQueryService) {
+        this.purchaseOrderDetailsService = purchaseOrderDetailsService;
+        this.purchaseOrderDetailsQueryService = purchaseOrderDetailsQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class PurchaseOrderDetailsResource {
         if (purchaseOrderDetails.getId() != null) {
             throw new BadRequestAlertException("A new purchaseOrderDetails cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        PurchaseOrderDetails result = purchaseOrderDetailsRepository.save(purchaseOrderDetails);
+        PurchaseOrderDetails result = purchaseOrderDetailsService.save(purchaseOrderDetails);
         return ResponseEntity.created(new URI("/api/purchase-order-details/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class PurchaseOrderDetailsResource {
         if (purchaseOrderDetails.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        PurchaseOrderDetails result = purchaseOrderDetailsRepository.save(purchaseOrderDetails);
+        PurchaseOrderDetails result = purchaseOrderDetailsService.save(purchaseOrderDetails);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, purchaseOrderDetails.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class PurchaseOrderDetailsResource {
      * {@code GET  /purchase-order-details} : get all the purchaseOrderDetails.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of purchaseOrderDetails in body.
      */
     @GetMapping("/purchase-order-details")
-    public List<PurchaseOrderDetails> getAllPurchaseOrderDetails() {
-        log.debug("REST request to get all PurchaseOrderDetails");
-        return purchaseOrderDetailsRepository.findAll();
+    public ResponseEntity<List<PurchaseOrderDetails>> getAllPurchaseOrderDetails(PurchaseOrderDetailsCriteria criteria) {
+        log.debug("REST request to get PurchaseOrderDetails by criteria: {}", criteria);
+        List<PurchaseOrderDetails> entityList = purchaseOrderDetailsQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /purchase-order-details/count} : count all the purchaseOrderDetails.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/purchase-order-details/count")
+    public ResponseEntity<Long> countPurchaseOrderDetails(PurchaseOrderDetailsCriteria criteria) {
+        log.debug("REST request to count PurchaseOrderDetails by criteria: {}", criteria);
+        return ResponseEntity.ok().body(purchaseOrderDetailsQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class PurchaseOrderDetailsResource {
     @GetMapping("/purchase-order-details/{id}")
     public ResponseEntity<PurchaseOrderDetails> getPurchaseOrderDetails(@PathVariable Long id) {
         log.debug("REST request to get PurchaseOrderDetails : {}", id);
-        Optional<PurchaseOrderDetails> purchaseOrderDetails = purchaseOrderDetailsRepository.findById(id);
+        Optional<PurchaseOrderDetails> purchaseOrderDetails = purchaseOrderDetailsService.findOne(id);
         return ResponseUtil.wrapOrNotFound(purchaseOrderDetails);
     }
 
@@ -113,7 +132,7 @@ public class PurchaseOrderDetailsResource {
     @DeleteMapping("/purchase-order-details/{id}")
     public ResponseEntity<Void> deletePurchaseOrderDetails(@PathVariable Long id) {
         log.debug("REST request to delete PurchaseOrderDetails : {}", id);
-        purchaseOrderDetailsRepository.deleteById(id);
+        purchaseOrderDetailsService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

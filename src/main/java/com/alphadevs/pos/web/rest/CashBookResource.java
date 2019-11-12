@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.CashBook;
-import com.alphadevs.pos.repository.CashBookRepository;
+import com.alphadevs.pos.service.CashBookService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.CashBookCriteria;
+import com.alphadevs.pos.service.CashBookQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class CashBookResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final CashBookRepository cashBookRepository;
+    private final CashBookService cashBookService;
 
-    public CashBookResource(CashBookRepository cashBookRepository) {
-        this.cashBookRepository = cashBookRepository;
+    private final CashBookQueryService cashBookQueryService;
+
+    public CashBookResource(CashBookService cashBookService, CashBookQueryService cashBookQueryService) {
+        this.cashBookService = cashBookService;
+        this.cashBookQueryService = cashBookQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class CashBookResource {
         if (cashBook.getId() != null) {
             throw new BadRequestAlertException("A new cashBook cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        CashBook result = cashBookRepository.save(cashBook);
+        CashBook result = cashBookService.save(cashBook);
         return ResponseEntity.created(new URI("/api/cash-books/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class CashBookResource {
         if (cashBook.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        CashBook result = cashBookRepository.save(cashBook);
+        CashBook result = cashBookService.save(cashBook);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, cashBook.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class CashBookResource {
      * {@code GET  /cash-books} : get all the cashBooks.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of cashBooks in body.
      */
     @GetMapping("/cash-books")
-    public List<CashBook> getAllCashBooks() {
-        log.debug("REST request to get all CashBooks");
-        return cashBookRepository.findAll();
+    public ResponseEntity<List<CashBook>> getAllCashBooks(CashBookCriteria criteria) {
+        log.debug("REST request to get CashBooks by criteria: {}", criteria);
+        List<CashBook> entityList = cashBookQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /cash-books/count} : count all the cashBooks.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/cash-books/count")
+    public ResponseEntity<Long> countCashBooks(CashBookCriteria criteria) {
+        log.debug("REST request to count CashBooks by criteria: {}", criteria);
+        return ResponseEntity.ok().body(cashBookQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class CashBookResource {
     @GetMapping("/cash-books/{id}")
     public ResponseEntity<CashBook> getCashBook(@PathVariable Long id) {
         log.debug("REST request to get CashBook : {}", id);
-        Optional<CashBook> cashBook = cashBookRepository.findById(id);
+        Optional<CashBook> cashBook = cashBookService.findOne(id);
         return ResponseUtil.wrapOrNotFound(cashBook);
     }
 
@@ -113,7 +132,7 @@ public class CashBookResource {
     @DeleteMapping("/cash-books/{id}")
     public ResponseEntity<Void> deleteCashBook(@PathVariable Long id) {
         log.debug("REST request to delete CashBook : {}", id);
-        cashBookRepository.deleteById(id);
+        cashBookService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

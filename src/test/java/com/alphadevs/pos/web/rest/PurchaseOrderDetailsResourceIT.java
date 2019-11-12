@@ -2,8 +2,13 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.PurchaseOrderDetails;
+import com.alphadevs.pos.domain.Items;
+import com.alphadevs.pos.domain.PurchaseOrder;
 import com.alphadevs.pos.repository.PurchaseOrderDetailsRepository;
+import com.alphadevs.pos.service.PurchaseOrderDetailsService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.PurchaseOrderDetailsCriteria;
+import com.alphadevs.pos.service.PurchaseOrderDetailsQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,9 +40,16 @@ public class PurchaseOrderDetailsResourceIT {
 
     private static final Integer DEFAULT_ITEM_QTY = 1;
     private static final Integer UPDATED_ITEM_QTY = 2;
+    private static final Integer SMALLER_ITEM_QTY = 1 - 1;
 
     @Autowired
     private PurchaseOrderDetailsRepository purchaseOrderDetailsRepository;
+
+    @Autowired
+    private PurchaseOrderDetailsService purchaseOrderDetailsService;
+
+    @Autowired
+    private PurchaseOrderDetailsQueryService purchaseOrderDetailsQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -61,7 +73,7 @@ public class PurchaseOrderDetailsResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PurchaseOrderDetailsResource purchaseOrderDetailsResource = new PurchaseOrderDetailsResource(purchaseOrderDetailsRepository);
+        final PurchaseOrderDetailsResource purchaseOrderDetailsResource = new PurchaseOrderDetailsResource(purchaseOrderDetailsService, purchaseOrderDetailsQueryService);
         this.restPurchaseOrderDetailsMockMvc = MockMvcBuilders.standaloneSetup(purchaseOrderDetailsResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -184,6 +196,185 @@ public class PurchaseOrderDetailsResourceIT {
 
     @Test
     @Transactional
+    public void getAllPurchaseOrderDetailsByItemQtyIsEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+
+        // Get all the purchaseOrderDetailsList where itemQty equals to DEFAULT_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldBeFound("itemQty.equals=" + DEFAULT_ITEM_QTY);
+
+        // Get all the purchaseOrderDetailsList where itemQty equals to UPDATED_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldNotBeFound("itemQty.equals=" + UPDATED_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrderDetailsByItemQtyIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+
+        // Get all the purchaseOrderDetailsList where itemQty not equals to DEFAULT_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldNotBeFound("itemQty.notEquals=" + DEFAULT_ITEM_QTY);
+
+        // Get all the purchaseOrderDetailsList where itemQty not equals to UPDATED_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldBeFound("itemQty.notEquals=" + UPDATED_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrderDetailsByItemQtyIsInShouldWork() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+
+        // Get all the purchaseOrderDetailsList where itemQty in DEFAULT_ITEM_QTY or UPDATED_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldBeFound("itemQty.in=" + DEFAULT_ITEM_QTY + "," + UPDATED_ITEM_QTY);
+
+        // Get all the purchaseOrderDetailsList where itemQty equals to UPDATED_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldNotBeFound("itemQty.in=" + UPDATED_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrderDetailsByItemQtyIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+
+        // Get all the purchaseOrderDetailsList where itemQty is not null
+        defaultPurchaseOrderDetailsShouldBeFound("itemQty.specified=true");
+
+        // Get all the purchaseOrderDetailsList where itemQty is null
+        defaultPurchaseOrderDetailsShouldNotBeFound("itemQty.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrderDetailsByItemQtyIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+
+        // Get all the purchaseOrderDetailsList where itemQty is greater than or equal to DEFAULT_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldBeFound("itemQty.greaterThanOrEqual=" + DEFAULT_ITEM_QTY);
+
+        // Get all the purchaseOrderDetailsList where itemQty is greater than or equal to UPDATED_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldNotBeFound("itemQty.greaterThanOrEqual=" + UPDATED_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrderDetailsByItemQtyIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+
+        // Get all the purchaseOrderDetailsList where itemQty is less than or equal to DEFAULT_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldBeFound("itemQty.lessThanOrEqual=" + DEFAULT_ITEM_QTY);
+
+        // Get all the purchaseOrderDetailsList where itemQty is less than or equal to SMALLER_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldNotBeFound("itemQty.lessThanOrEqual=" + SMALLER_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrderDetailsByItemQtyIsLessThanSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+
+        // Get all the purchaseOrderDetailsList where itemQty is less than DEFAULT_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldNotBeFound("itemQty.lessThan=" + DEFAULT_ITEM_QTY);
+
+        // Get all the purchaseOrderDetailsList where itemQty is less than UPDATED_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldBeFound("itemQty.lessThan=" + UPDATED_ITEM_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrderDetailsByItemQtyIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+
+        // Get all the purchaseOrderDetailsList where itemQty is greater than DEFAULT_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldNotBeFound("itemQty.greaterThan=" + DEFAULT_ITEM_QTY);
+
+        // Get all the purchaseOrderDetailsList where itemQty is greater than SMALLER_ITEM_QTY
+        defaultPurchaseOrderDetailsShouldBeFound("itemQty.greaterThan=" + SMALLER_ITEM_QTY);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrderDetailsByItemIsEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+        Items item = ItemsResourceIT.createEntity(em);
+        em.persist(item);
+        em.flush();
+        purchaseOrderDetails.setItem(item);
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+        Long itemId = item.getId();
+
+        // Get all the purchaseOrderDetailsList where item equals to itemId
+        defaultPurchaseOrderDetailsShouldBeFound("itemId.equals=" + itemId);
+
+        // Get all the purchaseOrderDetailsList where item equals to itemId + 1
+        defaultPurchaseOrderDetailsShouldNotBeFound("itemId.equals=" + (itemId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrderDetailsByPoIsEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+        PurchaseOrder po = PurchaseOrderResourceIT.createEntity(em);
+        em.persist(po);
+        em.flush();
+        purchaseOrderDetails.setPo(po);
+        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+        Long poId = po.getId();
+
+        // Get all the purchaseOrderDetailsList where po equals to poId
+        defaultPurchaseOrderDetailsShouldBeFound("poId.equals=" + poId);
+
+        // Get all the purchaseOrderDetailsList where po equals to poId + 1
+        defaultPurchaseOrderDetailsShouldNotBeFound("poId.equals=" + (poId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultPurchaseOrderDetailsShouldBeFound(String filter) throws Exception {
+        restPurchaseOrderDetailsMockMvc.perform(get("/api/purchase-order-details?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(purchaseOrderDetails.getId().intValue())))
+            .andExpect(jsonPath("$.[*].itemQty").value(hasItem(DEFAULT_ITEM_QTY)));
+
+        // Check, that the count call also returns 1
+        restPurchaseOrderDetailsMockMvc.perform(get("/api/purchase-order-details/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultPurchaseOrderDetailsShouldNotBeFound(String filter) throws Exception {
+        restPurchaseOrderDetailsMockMvc.perform(get("/api/purchase-order-details?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restPurchaseOrderDetailsMockMvc.perform(get("/api/purchase-order-details/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingPurchaseOrderDetails() throws Exception {
         // Get the purchaseOrderDetails
         restPurchaseOrderDetailsMockMvc.perform(get("/api/purchase-order-details/{id}", Long.MAX_VALUE))
@@ -194,7 +385,7 @@ public class PurchaseOrderDetailsResourceIT {
     @Transactional
     public void updatePurchaseOrderDetails() throws Exception {
         // Initialize the database
-        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+        purchaseOrderDetailsService.save(purchaseOrderDetails);
 
         int databaseSizeBeforeUpdate = purchaseOrderDetailsRepository.findAll().size();
 
@@ -239,7 +430,7 @@ public class PurchaseOrderDetailsResourceIT {
     @Transactional
     public void deletePurchaseOrderDetails() throws Exception {
         // Initialize the database
-        purchaseOrderDetailsRepository.saveAndFlush(purchaseOrderDetails);
+        purchaseOrderDetailsService.save(purchaseOrderDetails);
 
         int databaseSizeBeforeDelete = purchaseOrderDetailsRepository.findAll().size();
 

@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface SalesAccountBalanceRepository extends JpaRepository<SalesAccountBalance, Long> {
+public interface SalesAccountBalanceRepository extends JpaRepository<SalesAccountBalance, Long>, JpaSpecificationExecutor<SalesAccountBalance> {
 
 }

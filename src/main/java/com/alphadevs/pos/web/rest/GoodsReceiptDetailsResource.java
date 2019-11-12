@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.GoodsReceiptDetails;
-import com.alphadevs.pos.repository.GoodsReceiptDetailsRepository;
+import com.alphadevs.pos.service.GoodsReceiptDetailsService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.GoodsReceiptDetailsCriteria;
+import com.alphadevs.pos.service.GoodsReceiptDetailsQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class GoodsReceiptDetailsResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final GoodsReceiptDetailsRepository goodsReceiptDetailsRepository;
+    private final GoodsReceiptDetailsService goodsReceiptDetailsService;
 
-    public GoodsReceiptDetailsResource(GoodsReceiptDetailsRepository goodsReceiptDetailsRepository) {
-        this.goodsReceiptDetailsRepository = goodsReceiptDetailsRepository;
+    private final GoodsReceiptDetailsQueryService goodsReceiptDetailsQueryService;
+
+    public GoodsReceiptDetailsResource(GoodsReceiptDetailsService goodsReceiptDetailsService, GoodsReceiptDetailsQueryService goodsReceiptDetailsQueryService) {
+        this.goodsReceiptDetailsService = goodsReceiptDetailsService;
+        this.goodsReceiptDetailsQueryService = goodsReceiptDetailsQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class GoodsReceiptDetailsResource {
         if (goodsReceiptDetails.getId() != null) {
             throw new BadRequestAlertException("A new goodsReceiptDetails cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        GoodsReceiptDetails result = goodsReceiptDetailsRepository.save(goodsReceiptDetails);
+        GoodsReceiptDetails result = goodsReceiptDetailsService.save(goodsReceiptDetails);
         return ResponseEntity.created(new URI("/api/goods-receipt-details/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class GoodsReceiptDetailsResource {
         if (goodsReceiptDetails.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        GoodsReceiptDetails result = goodsReceiptDetailsRepository.save(goodsReceiptDetails);
+        GoodsReceiptDetails result = goodsReceiptDetailsService.save(goodsReceiptDetails);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, goodsReceiptDetails.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class GoodsReceiptDetailsResource {
      * {@code GET  /goods-receipt-details} : get all the goodsReceiptDetails.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of goodsReceiptDetails in body.
      */
     @GetMapping("/goods-receipt-details")
-    public List<GoodsReceiptDetails> getAllGoodsReceiptDetails() {
-        log.debug("REST request to get all GoodsReceiptDetails");
-        return goodsReceiptDetailsRepository.findAll();
+    public ResponseEntity<List<GoodsReceiptDetails>> getAllGoodsReceiptDetails(GoodsReceiptDetailsCriteria criteria) {
+        log.debug("REST request to get GoodsReceiptDetails by criteria: {}", criteria);
+        List<GoodsReceiptDetails> entityList = goodsReceiptDetailsQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /goods-receipt-details/count} : count all the goodsReceiptDetails.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/goods-receipt-details/count")
+    public ResponseEntity<Long> countGoodsReceiptDetails(GoodsReceiptDetailsCriteria criteria) {
+        log.debug("REST request to count GoodsReceiptDetails by criteria: {}", criteria);
+        return ResponseEntity.ok().body(goodsReceiptDetailsQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class GoodsReceiptDetailsResource {
     @GetMapping("/goods-receipt-details/{id}")
     public ResponseEntity<GoodsReceiptDetails> getGoodsReceiptDetails(@PathVariable Long id) {
         log.debug("REST request to get GoodsReceiptDetails : {}", id);
-        Optional<GoodsReceiptDetails> goodsReceiptDetails = goodsReceiptDetailsRepository.findById(id);
+        Optional<GoodsReceiptDetails> goodsReceiptDetails = goodsReceiptDetailsService.findOne(id);
         return ResponseUtil.wrapOrNotFound(goodsReceiptDetails);
     }
 
@@ -113,7 +132,7 @@ public class GoodsReceiptDetailsResource {
     @DeleteMapping("/goods-receipt-details/{id}")
     public ResponseEntity<Void> deleteGoodsReceiptDetails(@PathVariable Long id) {
         log.debug("REST request to delete GoodsReceiptDetails : {}", id);
-        goodsReceiptDetailsRepository.deleteById(id);
+        goodsReceiptDetailsService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.PurchaseOrder;
-import com.alphadevs.pos.repository.PurchaseOrderRepository;
+import com.alphadevs.pos.service.PurchaseOrderService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.PurchaseOrderCriteria;
+import com.alphadevs.pos.service.PurchaseOrderQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class PurchaseOrderResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final PurchaseOrderRepository purchaseOrderRepository;
+    private final PurchaseOrderService purchaseOrderService;
 
-    public PurchaseOrderResource(PurchaseOrderRepository purchaseOrderRepository) {
-        this.purchaseOrderRepository = purchaseOrderRepository;
+    private final PurchaseOrderQueryService purchaseOrderQueryService;
+
+    public PurchaseOrderResource(PurchaseOrderService purchaseOrderService, PurchaseOrderQueryService purchaseOrderQueryService) {
+        this.purchaseOrderService = purchaseOrderService;
+        this.purchaseOrderQueryService = purchaseOrderQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class PurchaseOrderResource {
         if (purchaseOrder.getId() != null) {
             throw new BadRequestAlertException("A new purchaseOrder cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        PurchaseOrder result = purchaseOrderRepository.save(purchaseOrder);
+        PurchaseOrder result = purchaseOrderService.save(purchaseOrder);
         return ResponseEntity.created(new URI("/api/purchase-orders/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class PurchaseOrderResource {
         if (purchaseOrder.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        PurchaseOrder result = purchaseOrderRepository.save(purchaseOrder);
+        PurchaseOrder result = purchaseOrderService.save(purchaseOrder);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, purchaseOrder.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class PurchaseOrderResource {
      * {@code GET  /purchase-orders} : get all the purchaseOrders.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of purchaseOrders in body.
      */
     @GetMapping("/purchase-orders")
-    public List<PurchaseOrder> getAllPurchaseOrders() {
-        log.debug("REST request to get all PurchaseOrders");
-        return purchaseOrderRepository.findAll();
+    public ResponseEntity<List<PurchaseOrder>> getAllPurchaseOrders(PurchaseOrderCriteria criteria) {
+        log.debug("REST request to get PurchaseOrders by criteria: {}", criteria);
+        List<PurchaseOrder> entityList = purchaseOrderQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /purchase-orders/count} : count all the purchaseOrders.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/purchase-orders/count")
+    public ResponseEntity<Long> countPurchaseOrders(PurchaseOrderCriteria criteria) {
+        log.debug("REST request to count PurchaseOrders by criteria: {}", criteria);
+        return ResponseEntity.ok().body(purchaseOrderQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class PurchaseOrderResource {
     @GetMapping("/purchase-orders/{id}")
     public ResponseEntity<PurchaseOrder> getPurchaseOrder(@PathVariable Long id) {
         log.debug("REST request to get PurchaseOrder : {}", id);
-        Optional<PurchaseOrder> purchaseOrder = purchaseOrderRepository.findById(id);
+        Optional<PurchaseOrder> purchaseOrder = purchaseOrderService.findOne(id);
         return ResponseUtil.wrapOrNotFound(purchaseOrder);
     }
 
@@ -113,7 +132,7 @@ public class PurchaseOrderResource {
     @DeleteMapping("/purchase-orders/{id}")
     public ResponseEntity<Void> deletePurchaseOrder(@PathVariable Long id) {
         log.debug("REST request to delete PurchaseOrder : {}", id);
-        purchaseOrderRepository.deleteById(id);
+        purchaseOrderService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

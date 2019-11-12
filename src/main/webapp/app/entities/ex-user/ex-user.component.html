@@ -28,10 +28,10 @@
             </thead>
             <tbody>
             <tr *ngFor="let exUser of exUsers ;trackBy: trackId">
-                <td><a [routerLink]="['/ex-user', exUser.id, 'view' ]">{{exUser.login}}</a></td>
+                <td><a [routerLink]="['/ex-user', exUser.id, 'view' ]">{{exUser.id}}</a></td>
                 <td>{{exUser.userKey}}</td>
                 <td>
-                    {{exUser.relatedUser?.id}}
+                    {{exUser.relatedUser?.login}}
                 </td>
                 <td>
                     <div *ngIf="exUser.company">

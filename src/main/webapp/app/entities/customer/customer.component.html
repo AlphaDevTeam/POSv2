@@ -36,7 +36,7 @@
                 <td>{{customer.isActive}}</td>
                 <td>
                     <div *ngIf="customer.location">
-                        <a [routerLink]="['/location', customer.location?.id, 'view' ]" >{{customer.location?.id}}</a>
+                        <a [routerLink]="['/location', customer.location?.id, 'view' ]" >{{customer.location?.locationCode}}</a>
                     </div>
                 </td>
                 <td class="text-right">

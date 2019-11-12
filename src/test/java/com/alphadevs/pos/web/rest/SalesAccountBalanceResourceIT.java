@@ -2,8 +2,12 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.SalesAccountBalance;
+import com.alphadevs.pos.domain.Location;
 import com.alphadevs.pos.repository.SalesAccountBalanceRepository;
+import com.alphadevs.pos.service.SalesAccountBalanceService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.SalesAccountBalanceCriteria;
+import com.alphadevs.pos.service.SalesAccountBalanceQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,9 +39,16 @@ public class SalesAccountBalanceResourceIT {
 
     private static final Double DEFAULT_BALANCE = 1D;
     private static final Double UPDATED_BALANCE = 2D;
+    private static final Double SMALLER_BALANCE = 1D - 1D;
 
     @Autowired
     private SalesAccountBalanceRepository salesAccountBalanceRepository;
+
+    @Autowired
+    private SalesAccountBalanceService salesAccountBalanceService;
+
+    @Autowired
+    private SalesAccountBalanceQueryService salesAccountBalanceQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -61,7 +72,7 @@ public class SalesAccountBalanceResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final SalesAccountBalanceResource salesAccountBalanceResource = new SalesAccountBalanceResource(salesAccountBalanceRepository);
+        final SalesAccountBalanceResource salesAccountBalanceResource = new SalesAccountBalanceResource(salesAccountBalanceService, salesAccountBalanceQueryService);
         this.restSalesAccountBalanceMockMvc = MockMvcBuilders.standaloneSetup(salesAccountBalanceResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -184,6 +195,165 @@ public class SalesAccountBalanceResourceIT {
 
     @Test
     @Transactional
+    public void getAllSalesAccountBalancesByBalanceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+
+        // Get all the salesAccountBalanceList where balance equals to DEFAULT_BALANCE
+        defaultSalesAccountBalanceShouldBeFound("balance.equals=" + DEFAULT_BALANCE);
+
+        // Get all the salesAccountBalanceList where balance equals to UPDATED_BALANCE
+        defaultSalesAccountBalanceShouldNotBeFound("balance.equals=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSalesAccountBalancesByBalanceIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+
+        // Get all the salesAccountBalanceList where balance not equals to DEFAULT_BALANCE
+        defaultSalesAccountBalanceShouldNotBeFound("balance.notEquals=" + DEFAULT_BALANCE);
+
+        // Get all the salesAccountBalanceList where balance not equals to UPDATED_BALANCE
+        defaultSalesAccountBalanceShouldBeFound("balance.notEquals=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSalesAccountBalancesByBalanceIsInShouldWork() throws Exception {
+        // Initialize the database
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+
+        // Get all the salesAccountBalanceList where balance in DEFAULT_BALANCE or UPDATED_BALANCE
+        defaultSalesAccountBalanceShouldBeFound("balance.in=" + DEFAULT_BALANCE + "," + UPDATED_BALANCE);
+
+        // Get all the salesAccountBalanceList where balance equals to UPDATED_BALANCE
+        defaultSalesAccountBalanceShouldNotBeFound("balance.in=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSalesAccountBalancesByBalanceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+
+        // Get all the salesAccountBalanceList where balance is not null
+        defaultSalesAccountBalanceShouldBeFound("balance.specified=true");
+
+        // Get all the salesAccountBalanceList where balance is null
+        defaultSalesAccountBalanceShouldNotBeFound("balance.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllSalesAccountBalancesByBalanceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+
+        // Get all the salesAccountBalanceList where balance is greater than or equal to DEFAULT_BALANCE
+        defaultSalesAccountBalanceShouldBeFound("balance.greaterThanOrEqual=" + DEFAULT_BALANCE);
+
+        // Get all the salesAccountBalanceList where balance is greater than or equal to UPDATED_BALANCE
+        defaultSalesAccountBalanceShouldNotBeFound("balance.greaterThanOrEqual=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSalesAccountBalancesByBalanceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+
+        // Get all the salesAccountBalanceList where balance is less than or equal to DEFAULT_BALANCE
+        defaultSalesAccountBalanceShouldBeFound("balance.lessThanOrEqual=" + DEFAULT_BALANCE);
+
+        // Get all the salesAccountBalanceList where balance is less than or equal to SMALLER_BALANCE
+        defaultSalesAccountBalanceShouldNotBeFound("balance.lessThanOrEqual=" + SMALLER_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSalesAccountBalancesByBalanceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+
+        // Get all the salesAccountBalanceList where balance is less than DEFAULT_BALANCE
+        defaultSalesAccountBalanceShouldNotBeFound("balance.lessThan=" + DEFAULT_BALANCE);
+
+        // Get all the salesAccountBalanceList where balance is less than UPDATED_BALANCE
+        defaultSalesAccountBalanceShouldBeFound("balance.lessThan=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllSalesAccountBalancesByBalanceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+
+        // Get all the salesAccountBalanceList where balance is greater than DEFAULT_BALANCE
+        defaultSalesAccountBalanceShouldNotBeFound("balance.greaterThan=" + DEFAULT_BALANCE);
+
+        // Get all the salesAccountBalanceList where balance is greater than SMALLER_BALANCE
+        defaultSalesAccountBalanceShouldBeFound("balance.greaterThan=" + SMALLER_BALANCE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllSalesAccountBalancesByLocationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+        Location location = LocationResourceIT.createEntity(em);
+        em.persist(location);
+        em.flush();
+        salesAccountBalance.setLocation(location);
+        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+        Long locationId = location.getId();
+
+        // Get all the salesAccountBalanceList where location equals to locationId
+        defaultSalesAccountBalanceShouldBeFound("locationId.equals=" + locationId);
+
+        // Get all the salesAccountBalanceList where location equals to locationId + 1
+        defaultSalesAccountBalanceShouldNotBeFound("locationId.equals=" + (locationId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultSalesAccountBalanceShouldBeFound(String filter) throws Exception {
+        restSalesAccountBalanceMockMvc.perform(get("/api/sales-account-balances?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(salesAccountBalance.getId().intValue())))
+            .andExpect(jsonPath("$.[*].balance").value(hasItem(DEFAULT_BALANCE.doubleValue())));
+
+        // Check, that the count call also returns 1
+        restSalesAccountBalanceMockMvc.perform(get("/api/sales-account-balances/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultSalesAccountBalanceShouldNotBeFound(String filter) throws Exception {
+        restSalesAccountBalanceMockMvc.perform(get("/api/sales-account-balances?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restSalesAccountBalanceMockMvc.perform(get("/api/sales-account-balances/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingSalesAccountBalance() throws Exception {
         // Get the salesAccountBalance
         restSalesAccountBalanceMockMvc.perform(get("/api/sales-account-balances/{id}", Long.MAX_VALUE))
@@ -194,7 +364,7 @@ public class SalesAccountBalanceResourceIT {
     @Transactional
     public void updateSalesAccountBalance() throws Exception {
         // Initialize the database
-        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+        salesAccountBalanceService.save(salesAccountBalance);
 
         int databaseSizeBeforeUpdate = salesAccountBalanceRepository.findAll().size();
 
@@ -239,7 +409,7 @@ public class SalesAccountBalanceResourceIT {
     @Transactional
     public void deleteSalesAccountBalance() throws Exception {
         // Initialize the database
-        salesAccountBalanceRepository.saveAndFlush(salesAccountBalance);
+        salesAccountBalanceService.save(salesAccountBalance);
 
         int databaseSizeBeforeDelete = salesAccountBalanceRepository.findAll().size();
 

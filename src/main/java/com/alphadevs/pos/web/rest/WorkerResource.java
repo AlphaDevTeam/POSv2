@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.Worker;
-import com.alphadevs.pos.repository.WorkerRepository;
+import com.alphadevs.pos.service.WorkerService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.WorkerCriteria;
+import com.alphadevs.pos.service.WorkerQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class WorkerResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final WorkerRepository workerRepository;
+    private final WorkerService workerService;
 
-    public WorkerResource(WorkerRepository workerRepository) {
-        this.workerRepository = workerRepository;
+    private final WorkerQueryService workerQueryService;
+
+    public WorkerResource(WorkerService workerService, WorkerQueryService workerQueryService) {
+        this.workerService = workerService;
+        this.workerQueryService = workerQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class WorkerResource {
         if (worker.getId() != null) {
             throw new BadRequestAlertException("A new worker cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Worker result = workerRepository.save(worker);
+        Worker result = workerService.save(worker);
         return ResponseEntity.created(new URI("/api/workers/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class WorkerResource {
         if (worker.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Worker result = workerRepository.save(worker);
+        Worker result = workerService.save(worker);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, worker.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class WorkerResource {
      * {@code GET  /workers} : get all the workers.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of workers in body.
      */
     @GetMapping("/workers")
-    public List<Worker> getAllWorkers() {
-        log.debug("REST request to get all Workers");
-        return workerRepository.findAll();
+    public ResponseEntity<List<Worker>> getAllWorkers(WorkerCriteria criteria) {
+        log.debug("REST request to get Workers by criteria: {}", criteria);
+        List<Worker> entityList = workerQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /workers/count} : count all the workers.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/workers/count")
+    public ResponseEntity<Long> countWorkers(WorkerCriteria criteria) {
+        log.debug("REST request to count Workers by criteria: {}", criteria);
+        return ResponseEntity.ok().body(workerQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class WorkerResource {
     @GetMapping("/workers/{id}")
     public ResponseEntity<Worker> getWorker(@PathVariable Long id) {
         log.debug("REST request to get Worker : {}", id);
-        Optional<Worker> worker = workerRepository.findById(id);
+        Optional<Worker> worker = workerService.findOne(id);
         return ResponseUtil.wrapOrNotFound(worker);
     }
 
@@ -113,7 +132,7 @@ public class WorkerResource {
     @DeleteMapping("/workers/{id}")
     public ResponseEntity<Void> deleteWorker(@PathVariable Long id) {
         log.debug("REST request to delete Worker : {}", id);
-        workerRepository.deleteById(id);
+        workerService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

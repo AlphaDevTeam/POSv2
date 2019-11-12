@@ -79,6 +79,7 @@ public class CacheConfiguration {
             createCache(cm, com.alphadevs.pos.domain.ExUser.class.getName() + ".locations");
             createCache(cm, com.alphadevs.pos.domain.Stock.class.getName());
             createCache(cm, com.alphadevs.pos.domain.Company.class.getName());
+            createCache(cm, com.alphadevs.pos.domain.Designs.class.getName());
             // jhipster-needle-ehcache-add-entry
         };
     }

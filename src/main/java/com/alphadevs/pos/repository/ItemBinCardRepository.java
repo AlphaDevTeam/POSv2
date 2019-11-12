@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface ItemBinCardRepository extends JpaRepository<ItemBinCard, Long> {
+public interface ItemBinCardRepository extends JpaRepository<ItemBinCard, Long>, JpaSpecificationExecutor<ItemBinCard> {
 
 }

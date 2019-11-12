@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.ItemBinCard;
-import com.alphadevs.pos.repository.ItemBinCardRepository;
+import com.alphadevs.pos.service.ItemBinCardService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.ItemBinCardCriteria;
+import com.alphadevs.pos.service.ItemBinCardQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class ItemBinCardResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final ItemBinCardRepository itemBinCardRepository;
+    private final ItemBinCardService itemBinCardService;
 
-    public ItemBinCardResource(ItemBinCardRepository itemBinCardRepository) {
-        this.itemBinCardRepository = itemBinCardRepository;
+    private final ItemBinCardQueryService itemBinCardQueryService;
+
+    public ItemBinCardResource(ItemBinCardService itemBinCardService, ItemBinCardQueryService itemBinCardQueryService) {
+        this.itemBinCardService = itemBinCardService;
+        this.itemBinCardQueryService = itemBinCardQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class ItemBinCardResource {
         if (itemBinCard.getId() != null) {
             throw new BadRequestAlertException("A new itemBinCard cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        ItemBinCard result = itemBinCardRepository.save(itemBinCard);
+        ItemBinCard result = itemBinCardService.save(itemBinCard);
         return ResponseEntity.created(new URI("/api/item-bin-cards/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class ItemBinCardResource {
         if (itemBinCard.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        ItemBinCard result = itemBinCardRepository.save(itemBinCard);
+        ItemBinCard result = itemBinCardService.save(itemBinCard);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, itemBinCard.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class ItemBinCardResource {
      * {@code GET  /item-bin-cards} : get all the itemBinCards.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of itemBinCards in body.
      */
     @GetMapping("/item-bin-cards")
-    public List<ItemBinCard> getAllItemBinCards() {
-        log.debug("REST request to get all ItemBinCards");
-        return itemBinCardRepository.findAll();
+    public ResponseEntity<List<ItemBinCard>> getAllItemBinCards(ItemBinCardCriteria criteria) {
+        log.debug("REST request to get ItemBinCards by criteria: {}", criteria);
+        List<ItemBinCard> entityList = itemBinCardQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /item-bin-cards/count} : count all the itemBinCards.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/item-bin-cards/count")
+    public ResponseEntity<Long> countItemBinCards(ItemBinCardCriteria criteria) {
+        log.debug("REST request to count ItemBinCards by criteria: {}", criteria);
+        return ResponseEntity.ok().body(itemBinCardQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class ItemBinCardResource {
     @GetMapping("/item-bin-cards/{id}")
     public ResponseEntity<ItemBinCard> getItemBinCard(@PathVariable Long id) {
         log.debug("REST request to get ItemBinCard : {}", id);
-        Optional<ItemBinCard> itemBinCard = itemBinCardRepository.findById(id);
+        Optional<ItemBinCard> itemBinCard = itemBinCardService.findOne(id);
         return ResponseUtil.wrapOrNotFound(itemBinCard);
     }
 
@@ -113,7 +132,7 @@ public class ItemBinCardResource {
     @DeleteMapping("/item-bin-cards/{id}")
     public ResponseEntity<Void> deleteItemBinCard(@PathVariable Long id) {
         log.debug("REST request to delete ItemBinCard : {}", id);
-        itemBinCardRepository.deleteById(id);
+        itemBinCardService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

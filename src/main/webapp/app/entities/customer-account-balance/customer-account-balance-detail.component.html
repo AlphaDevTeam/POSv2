@@ -12,7 +12,7 @@
                 <dt><span>Location</span></dt>
                 <dd>
                     <div *ngIf="customerAccountBalance.location">
-                        <a [routerLink]="['/location', customerAccountBalance.location?.id, 'view']">{{customerAccountBalance.location?.id}}</a>
+                        <a [routerLink]="['/location', customerAccountBalance.location?.id, 'view']">{{customerAccountBalance.location?.locationCode}}</a>
                     </div>
                 </dd>
             </dl>

@@ -64,7 +64,7 @@ public class Items implements Serializable {
 
     @ManyToOne
     @JsonIgnoreProperties("items")
-    private Desings relatedDesign;
+    private Designs relatedDesign;
 
     @ManyToOne
     @JsonIgnoreProperties("items")
@@ -213,17 +213,17 @@ public class Items implements Serializable {
         this.modifiedStockDate = modifiedStockDate;
     }
 
-    public Desings getRelatedDesign() {
+    public Designs getRelatedDesign() {
         return relatedDesign;
     }
 
-    public Items relatedDesign(Desings desings) {
-        this.relatedDesign = desings;
+    public Items relatedDesign(Designs designs) {
+        this.relatedDesign = designs;
         return this;
     }
 
-    public void setRelatedDesign(Desings desings) {
-        this.relatedDesign = desings;
+    public void setRelatedDesign(Designs designs) {
+        this.relatedDesign = designs;
     }
 
     public Products getRelatedProduct() {

@@ -2,8 +2,12 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.CustomerAccountBalance;
+import com.alphadevs.pos.domain.Location;
 import com.alphadevs.pos.repository.CustomerAccountBalanceRepository;
+import com.alphadevs.pos.service.CustomerAccountBalanceService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.CustomerAccountBalanceCriteria;
+import com.alphadevs.pos.service.CustomerAccountBalanceQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,9 +39,16 @@ public class CustomerAccountBalanceResourceIT {
 
     private static final Double DEFAULT_BALANCE = 1D;
     private static final Double UPDATED_BALANCE = 2D;
+    private static final Double SMALLER_BALANCE = 1D - 1D;
 
     @Autowired
     private CustomerAccountBalanceRepository customerAccountBalanceRepository;
+
+    @Autowired
+    private CustomerAccountBalanceService customerAccountBalanceService;
+
+    @Autowired
+    private CustomerAccountBalanceQueryService customerAccountBalanceQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -61,7 +72,7 @@ public class CustomerAccountBalanceResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CustomerAccountBalanceResource customerAccountBalanceResource = new CustomerAccountBalanceResource(customerAccountBalanceRepository);
+        final CustomerAccountBalanceResource customerAccountBalanceResource = new CustomerAccountBalanceResource(customerAccountBalanceService, customerAccountBalanceQueryService);
         this.restCustomerAccountBalanceMockMvc = MockMvcBuilders.standaloneSetup(customerAccountBalanceResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -184,6 +195,165 @@ public class CustomerAccountBalanceResourceIT {
 
     @Test
     @Transactional
+    public void getAllCustomerAccountBalancesByBalanceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+
+        // Get all the customerAccountBalanceList where balance equals to DEFAULT_BALANCE
+        defaultCustomerAccountBalanceShouldBeFound("balance.equals=" + DEFAULT_BALANCE);
+
+        // Get all the customerAccountBalanceList where balance equals to UPDATED_BALANCE
+        defaultCustomerAccountBalanceShouldNotBeFound("balance.equals=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCustomerAccountBalancesByBalanceIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+
+        // Get all the customerAccountBalanceList where balance not equals to DEFAULT_BALANCE
+        defaultCustomerAccountBalanceShouldNotBeFound("balance.notEquals=" + DEFAULT_BALANCE);
+
+        // Get all the customerAccountBalanceList where balance not equals to UPDATED_BALANCE
+        defaultCustomerAccountBalanceShouldBeFound("balance.notEquals=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCustomerAccountBalancesByBalanceIsInShouldWork() throws Exception {
+        // Initialize the database
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+
+        // Get all the customerAccountBalanceList where balance in DEFAULT_BALANCE or UPDATED_BALANCE
+        defaultCustomerAccountBalanceShouldBeFound("balance.in=" + DEFAULT_BALANCE + "," + UPDATED_BALANCE);
+
+        // Get all the customerAccountBalanceList where balance equals to UPDATED_BALANCE
+        defaultCustomerAccountBalanceShouldNotBeFound("balance.in=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCustomerAccountBalancesByBalanceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+
+        // Get all the customerAccountBalanceList where balance is not null
+        defaultCustomerAccountBalanceShouldBeFound("balance.specified=true");
+
+        // Get all the customerAccountBalanceList where balance is null
+        defaultCustomerAccountBalanceShouldNotBeFound("balance.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCustomerAccountBalancesByBalanceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+
+        // Get all the customerAccountBalanceList where balance is greater than or equal to DEFAULT_BALANCE
+        defaultCustomerAccountBalanceShouldBeFound("balance.greaterThanOrEqual=" + DEFAULT_BALANCE);
+
+        // Get all the customerAccountBalanceList where balance is greater than or equal to UPDATED_BALANCE
+        defaultCustomerAccountBalanceShouldNotBeFound("balance.greaterThanOrEqual=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCustomerAccountBalancesByBalanceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+
+        // Get all the customerAccountBalanceList where balance is less than or equal to DEFAULT_BALANCE
+        defaultCustomerAccountBalanceShouldBeFound("balance.lessThanOrEqual=" + DEFAULT_BALANCE);
+
+        // Get all the customerAccountBalanceList where balance is less than or equal to SMALLER_BALANCE
+        defaultCustomerAccountBalanceShouldNotBeFound("balance.lessThanOrEqual=" + SMALLER_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCustomerAccountBalancesByBalanceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+
+        // Get all the customerAccountBalanceList where balance is less than DEFAULT_BALANCE
+        defaultCustomerAccountBalanceShouldNotBeFound("balance.lessThan=" + DEFAULT_BALANCE);
+
+        // Get all the customerAccountBalanceList where balance is less than UPDATED_BALANCE
+        defaultCustomerAccountBalanceShouldBeFound("balance.lessThan=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCustomerAccountBalancesByBalanceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+
+        // Get all the customerAccountBalanceList where balance is greater than DEFAULT_BALANCE
+        defaultCustomerAccountBalanceShouldNotBeFound("balance.greaterThan=" + DEFAULT_BALANCE);
+
+        // Get all the customerAccountBalanceList where balance is greater than SMALLER_BALANCE
+        defaultCustomerAccountBalanceShouldBeFound("balance.greaterThan=" + SMALLER_BALANCE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCustomerAccountBalancesByLocationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+        Location location = LocationResourceIT.createEntity(em);
+        em.persist(location);
+        em.flush();
+        customerAccountBalance.setLocation(location);
+        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+        Long locationId = location.getId();
+
+        // Get all the customerAccountBalanceList where location equals to locationId
+        defaultCustomerAccountBalanceShouldBeFound("locationId.equals=" + locationId);
+
+        // Get all the customerAccountBalanceList where location equals to locationId + 1
+        defaultCustomerAccountBalanceShouldNotBeFound("locationId.equals=" + (locationId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultCustomerAccountBalanceShouldBeFound(String filter) throws Exception {
+        restCustomerAccountBalanceMockMvc.perform(get("/api/customer-account-balances?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(customerAccountBalance.getId().intValue())))
+            .andExpect(jsonPath("$.[*].balance").value(hasItem(DEFAULT_BALANCE.doubleValue())));
+
+        // Check, that the count call also returns 1
+        restCustomerAccountBalanceMockMvc.perform(get("/api/customer-account-balances/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultCustomerAccountBalanceShouldNotBeFound(String filter) throws Exception {
+        restCustomerAccountBalanceMockMvc.perform(get("/api/customer-account-balances?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restCustomerAccountBalanceMockMvc.perform(get("/api/customer-account-balances/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingCustomerAccountBalance() throws Exception {
         // Get the customerAccountBalance
         restCustomerAccountBalanceMockMvc.perform(get("/api/customer-account-balances/{id}", Long.MAX_VALUE))
@@ -194,7 +364,7 @@ public class CustomerAccountBalanceResourceIT {
     @Transactional
     public void updateCustomerAccountBalance() throws Exception {
         // Initialize the database
-        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+        customerAccountBalanceService.save(customerAccountBalance);
 
         int databaseSizeBeforeUpdate = customerAccountBalanceRepository.findAll().size();
 
@@ -239,7 +409,7 @@ public class CustomerAccountBalanceResourceIT {
     @Transactional
     public void deleteCustomerAccountBalance() throws Exception {
         // Initialize the database
-        customerAccountBalanceRepository.saveAndFlush(customerAccountBalance);
+        customerAccountBalanceService.save(customerAccountBalance);
 
         int databaseSizeBeforeDelete = customerAccountBalanceRepository.findAll().size();
 

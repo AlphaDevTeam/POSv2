@@ -1,6 +1,7 @@
 package com.alphadevs.pos.web.rest;
 
 
+import com.alphadevs.pos.domain.Company;
 import com.alphadevs.pos.domain.ExUser;
 import com.alphadevs.pos.domain.User;
 import com.alphadevs.pos.repository.UserRepository;
@@ -104,7 +105,13 @@ public class AccountResource {
     @GetMapping("/account")
     public UserDTO getAccount() {
         UserDTO userDTO = userService.getUserWithAuthorities().map(UserDTO::new).orElseThrow(() -> new AccountResourceException("User could not be found"));
-        userDTO.setCompany(userService.getExUser().get().getCompany());
+        if(userService.getExUser().isPresent() && userService.getExUser().get() != null && userService.getExUser().get().getCompany() != null ) {
+            userDTO.setCompany(userService.getExUser().get().getCompany());
+        }else{
+            Company company = new Company();
+            company.setCompanyCode("System");
+            userDTO.setCompany(company);
+        }
         return userDTO;
     }
 

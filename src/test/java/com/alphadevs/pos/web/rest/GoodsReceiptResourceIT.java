@@ -2,8 +2,15 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.GoodsReceipt;
+import com.alphadevs.pos.domain.GoodsReceiptDetails;
+import com.alphadevs.pos.domain.PurchaseOrder;
+import com.alphadevs.pos.domain.Supplier;
+import com.alphadevs.pos.domain.Location;
 import com.alphadevs.pos.repository.GoodsReceiptRepository;
+import com.alphadevs.pos.service.GoodsReceiptService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.GoodsReceiptCriteria;
+import com.alphadevs.pos.service.GoodsReceiptQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,12 +47,19 @@ public class GoodsReceiptResourceIT {
 
     private static final LocalDate DEFAULT_GRN_DATE = LocalDate.ofEpochDay(0L);
     private static final LocalDate UPDATED_GRN_DATE = LocalDate.now(ZoneId.systemDefault());
+    private static final LocalDate SMALLER_GRN_DATE = LocalDate.ofEpochDay(-1L);
 
     private static final String DEFAULT_PO_NUMBER = "AAAAAAAAAA";
     private static final String UPDATED_PO_NUMBER = "BBBBBBBBBB";
 
     @Autowired
     private GoodsReceiptRepository goodsReceiptRepository;
+
+    @Autowired
+    private GoodsReceiptService goodsReceiptService;
+
+    @Autowired
+    private GoodsReceiptQueryService goodsReceiptQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -69,7 +83,7 @@ public class GoodsReceiptResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final GoodsReceiptResource goodsReceiptResource = new GoodsReceiptResource(goodsReceiptRepository);
+        final GoodsReceiptResource goodsReceiptResource = new GoodsReceiptResource(goodsReceiptService, goodsReceiptQueryService);
         this.restGoodsReceiptMockMvc = MockMvcBuilders.standaloneSetup(goodsReceiptResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -220,6 +234,383 @@ public class GoodsReceiptResourceIT {
 
     @Test
     @Transactional
+    public void getAllGoodsReceiptsByGrnNumberIsEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnNumber equals to DEFAULT_GRN_NUMBER
+        defaultGoodsReceiptShouldBeFound("grnNumber.equals=" + DEFAULT_GRN_NUMBER);
+
+        // Get all the goodsReceiptList where grnNumber equals to UPDATED_GRN_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("grnNumber.equals=" + UPDATED_GRN_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnNumberIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnNumber not equals to DEFAULT_GRN_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("grnNumber.notEquals=" + DEFAULT_GRN_NUMBER);
+
+        // Get all the goodsReceiptList where grnNumber not equals to UPDATED_GRN_NUMBER
+        defaultGoodsReceiptShouldBeFound("grnNumber.notEquals=" + UPDATED_GRN_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnNumberIsInShouldWork() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnNumber in DEFAULT_GRN_NUMBER or UPDATED_GRN_NUMBER
+        defaultGoodsReceiptShouldBeFound("grnNumber.in=" + DEFAULT_GRN_NUMBER + "," + UPDATED_GRN_NUMBER);
+
+        // Get all the goodsReceiptList where grnNumber equals to UPDATED_GRN_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("grnNumber.in=" + UPDATED_GRN_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnNumberIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnNumber is not null
+        defaultGoodsReceiptShouldBeFound("grnNumber.specified=true");
+
+        // Get all the goodsReceiptList where grnNumber is null
+        defaultGoodsReceiptShouldNotBeFound("grnNumber.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnNumberContainsSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnNumber contains DEFAULT_GRN_NUMBER
+        defaultGoodsReceiptShouldBeFound("grnNumber.contains=" + DEFAULT_GRN_NUMBER);
+
+        // Get all the goodsReceiptList where grnNumber contains UPDATED_GRN_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("grnNumber.contains=" + UPDATED_GRN_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnNumberNotContainsSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnNumber does not contain DEFAULT_GRN_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("grnNumber.doesNotContain=" + DEFAULT_GRN_NUMBER);
+
+        // Get all the goodsReceiptList where grnNumber does not contain UPDATED_GRN_NUMBER
+        defaultGoodsReceiptShouldBeFound("grnNumber.doesNotContain=" + UPDATED_GRN_NUMBER);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnDateIsEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnDate equals to DEFAULT_GRN_DATE
+        defaultGoodsReceiptShouldBeFound("grnDate.equals=" + DEFAULT_GRN_DATE);
+
+        // Get all the goodsReceiptList where grnDate equals to UPDATED_GRN_DATE
+        defaultGoodsReceiptShouldNotBeFound("grnDate.equals=" + UPDATED_GRN_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnDateIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnDate not equals to DEFAULT_GRN_DATE
+        defaultGoodsReceiptShouldNotBeFound("grnDate.notEquals=" + DEFAULT_GRN_DATE);
+
+        // Get all the goodsReceiptList where grnDate not equals to UPDATED_GRN_DATE
+        defaultGoodsReceiptShouldBeFound("grnDate.notEquals=" + UPDATED_GRN_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnDateIsInShouldWork() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnDate in DEFAULT_GRN_DATE or UPDATED_GRN_DATE
+        defaultGoodsReceiptShouldBeFound("grnDate.in=" + DEFAULT_GRN_DATE + "," + UPDATED_GRN_DATE);
+
+        // Get all the goodsReceiptList where grnDate equals to UPDATED_GRN_DATE
+        defaultGoodsReceiptShouldNotBeFound("grnDate.in=" + UPDATED_GRN_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnDateIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnDate is not null
+        defaultGoodsReceiptShouldBeFound("grnDate.specified=true");
+
+        // Get all the goodsReceiptList where grnDate is null
+        defaultGoodsReceiptShouldNotBeFound("grnDate.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnDateIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnDate is greater than or equal to DEFAULT_GRN_DATE
+        defaultGoodsReceiptShouldBeFound("grnDate.greaterThanOrEqual=" + DEFAULT_GRN_DATE);
+
+        // Get all the goodsReceiptList where grnDate is greater than or equal to UPDATED_GRN_DATE
+        defaultGoodsReceiptShouldNotBeFound("grnDate.greaterThanOrEqual=" + UPDATED_GRN_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnDateIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnDate is less than or equal to DEFAULT_GRN_DATE
+        defaultGoodsReceiptShouldBeFound("grnDate.lessThanOrEqual=" + DEFAULT_GRN_DATE);
+
+        // Get all the goodsReceiptList where grnDate is less than or equal to SMALLER_GRN_DATE
+        defaultGoodsReceiptShouldNotBeFound("grnDate.lessThanOrEqual=" + SMALLER_GRN_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnDateIsLessThanSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnDate is less than DEFAULT_GRN_DATE
+        defaultGoodsReceiptShouldNotBeFound("grnDate.lessThan=" + DEFAULT_GRN_DATE);
+
+        // Get all the goodsReceiptList where grnDate is less than UPDATED_GRN_DATE
+        defaultGoodsReceiptShouldBeFound("grnDate.lessThan=" + UPDATED_GRN_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByGrnDateIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where grnDate is greater than DEFAULT_GRN_DATE
+        defaultGoodsReceiptShouldNotBeFound("grnDate.greaterThan=" + DEFAULT_GRN_DATE);
+
+        // Get all the goodsReceiptList where grnDate is greater than SMALLER_GRN_DATE
+        defaultGoodsReceiptShouldBeFound("grnDate.greaterThan=" + SMALLER_GRN_DATE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByPoNumberIsEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where poNumber equals to DEFAULT_PO_NUMBER
+        defaultGoodsReceiptShouldBeFound("poNumber.equals=" + DEFAULT_PO_NUMBER);
+
+        // Get all the goodsReceiptList where poNumber equals to UPDATED_PO_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("poNumber.equals=" + UPDATED_PO_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByPoNumberIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where poNumber not equals to DEFAULT_PO_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("poNumber.notEquals=" + DEFAULT_PO_NUMBER);
+
+        // Get all the goodsReceiptList where poNumber not equals to UPDATED_PO_NUMBER
+        defaultGoodsReceiptShouldBeFound("poNumber.notEquals=" + UPDATED_PO_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByPoNumberIsInShouldWork() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where poNumber in DEFAULT_PO_NUMBER or UPDATED_PO_NUMBER
+        defaultGoodsReceiptShouldBeFound("poNumber.in=" + DEFAULT_PO_NUMBER + "," + UPDATED_PO_NUMBER);
+
+        // Get all the goodsReceiptList where poNumber equals to UPDATED_PO_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("poNumber.in=" + UPDATED_PO_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByPoNumberIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where poNumber is not null
+        defaultGoodsReceiptShouldBeFound("poNumber.specified=true");
+
+        // Get all the goodsReceiptList where poNumber is null
+        defaultGoodsReceiptShouldNotBeFound("poNumber.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllGoodsReceiptsByPoNumberContainsSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where poNumber contains DEFAULT_PO_NUMBER
+        defaultGoodsReceiptShouldBeFound("poNumber.contains=" + DEFAULT_PO_NUMBER);
+
+        // Get all the goodsReceiptList where poNumber contains UPDATED_PO_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("poNumber.contains=" + UPDATED_PO_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByPoNumberNotContainsSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+
+        // Get all the goodsReceiptList where poNumber does not contain DEFAULT_PO_NUMBER
+        defaultGoodsReceiptShouldNotBeFound("poNumber.doesNotContain=" + DEFAULT_PO_NUMBER);
+
+        // Get all the goodsReceiptList where poNumber does not contain UPDATED_PO_NUMBER
+        defaultGoodsReceiptShouldBeFound("poNumber.doesNotContain=" + UPDATED_PO_NUMBER);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByDetailsIsEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        GoodsReceiptDetails details = GoodsReceiptDetailsResourceIT.createEntity(em);
+        em.persist(details);
+        em.flush();
+        goodsReceipt.addDetails(details);
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        Long detailsId = details.getId();
+
+        // Get all the goodsReceiptList where details equals to detailsId
+        defaultGoodsReceiptShouldBeFound("detailsId.equals=" + detailsId);
+
+        // Get all the goodsReceiptList where details equals to detailsId + 1
+        defaultGoodsReceiptShouldNotBeFound("detailsId.equals=" + (detailsId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByLinkedPOsIsEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        PurchaseOrder linkedPOs = PurchaseOrderResourceIT.createEntity(em);
+        em.persist(linkedPOs);
+        em.flush();
+        goodsReceipt.addLinkedPOs(linkedPOs);
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        Long linkedPOsId = linkedPOs.getId();
+
+        // Get all the goodsReceiptList where linkedPOs equals to linkedPOsId
+        defaultGoodsReceiptShouldBeFound("linkedPOsId.equals=" + linkedPOsId);
+
+        // Get all the goodsReceiptList where linkedPOs equals to linkedPOsId + 1
+        defaultGoodsReceiptShouldNotBeFound("linkedPOsId.equals=" + (linkedPOsId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsBySupplierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        Supplier supplier = SupplierResourceIT.createEntity(em);
+        em.persist(supplier);
+        em.flush();
+        goodsReceipt.setSupplier(supplier);
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        Long supplierId = supplier.getId();
+
+        // Get all the goodsReceiptList where supplier equals to supplierId
+        defaultGoodsReceiptShouldBeFound("supplierId.equals=" + supplierId);
+
+        // Get all the goodsReceiptList where supplier equals to supplierId + 1
+        defaultGoodsReceiptShouldNotBeFound("supplierId.equals=" + (supplierId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllGoodsReceiptsByLocationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        Location location = LocationResourceIT.createEntity(em);
+        em.persist(location);
+        em.flush();
+        goodsReceipt.setLocation(location);
+        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        Long locationId = location.getId();
+
+        // Get all the goodsReceiptList where location equals to locationId
+        defaultGoodsReceiptShouldBeFound("locationId.equals=" + locationId);
+
+        // Get all the goodsReceiptList where location equals to locationId + 1
+        defaultGoodsReceiptShouldNotBeFound("locationId.equals=" + (locationId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultGoodsReceiptShouldBeFound(String filter) throws Exception {
+        restGoodsReceiptMockMvc.perform(get("/api/goods-receipts?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(goodsReceipt.getId().intValue())))
+            .andExpect(jsonPath("$.[*].grnNumber").value(hasItem(DEFAULT_GRN_NUMBER)))
+            .andExpect(jsonPath("$.[*].grnDate").value(hasItem(DEFAULT_GRN_DATE.toString())))
+            .andExpect(jsonPath("$.[*].poNumber").value(hasItem(DEFAULT_PO_NUMBER)));
+
+        // Check, that the count call also returns 1
+        restGoodsReceiptMockMvc.perform(get("/api/goods-receipts/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultGoodsReceiptShouldNotBeFound(String filter) throws Exception {
+        restGoodsReceiptMockMvc.perform(get("/api/goods-receipts?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restGoodsReceiptMockMvc.perform(get("/api/goods-receipts/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingGoodsReceipt() throws Exception {
         // Get the goodsReceipt
         restGoodsReceiptMockMvc.perform(get("/api/goods-receipts/{id}", Long.MAX_VALUE))
@@ -230,7 +621,7 @@ public class GoodsReceiptResourceIT {
     @Transactional
     public void updateGoodsReceipt() throws Exception {
         // Initialize the database
-        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        goodsReceiptService.save(goodsReceipt);
 
         int databaseSizeBeforeUpdate = goodsReceiptRepository.findAll().size();
 
@@ -279,7 +670,7 @@ public class GoodsReceiptResourceIT {
     @Transactional
     public void deleteGoodsReceipt() throws Exception {
         // Initialize the database
-        goodsReceiptRepository.saveAndFlush(goodsReceipt);
+        goodsReceiptService.save(goodsReceipt);
 
         int databaseSizeBeforeDelete = goodsReceiptRepository.findAll().size();
 

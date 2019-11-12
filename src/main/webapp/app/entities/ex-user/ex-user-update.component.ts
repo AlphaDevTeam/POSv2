@@ -75,6 +75,16 @@ export class ExUserUpdateComponent implements OnInit {
       .subscribe((res: ILocation[]) => (this.locations = res), (res: HttpErrorResponse) => this.onError(res.message));
   }
 
+  updateLocation(companyId: number) {
+    this.locationService
+      .query({ 'companyId.equals': companyId })
+      .pipe(
+        filter((mayBeOk: HttpResponse<ILocation[]>) => mayBeOk.ok),
+        map((response: HttpResponse<ILocation[]>) => response.body)
+      )
+      .subscribe((res: ILocation[]) => (this.locations = res), (res: HttpErrorResponse) => this.onError(res.message));
+  }
+
   updateForm(exUser: IExUser) {
     this.editForm.patchValue({
       id: exUser.id,

@@ -2,8 +2,15 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.PurchaseOrder;
+import com.alphadevs.pos.domain.PurchaseOrderDetails;
+import com.alphadevs.pos.domain.Supplier;
+import com.alphadevs.pos.domain.Location;
+import com.alphadevs.pos.domain.GoodsReceipt;
 import com.alphadevs.pos.repository.PurchaseOrderRepository;
+import com.alphadevs.pos.service.PurchaseOrderService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.PurchaseOrderCriteria;
+import com.alphadevs.pos.service.PurchaseOrderQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +47,16 @@ public class PurchaseOrderResourceIT {
 
     private static final LocalDate DEFAULT_PO_DATE = LocalDate.ofEpochDay(0L);
     private static final LocalDate UPDATED_PO_DATE = LocalDate.now(ZoneId.systemDefault());
+    private static final LocalDate SMALLER_PO_DATE = LocalDate.ofEpochDay(-1L);
 
     @Autowired
     private PurchaseOrderRepository purchaseOrderRepository;
+
+    @Autowired
+    private PurchaseOrderService purchaseOrderService;
+
+    @Autowired
+    private PurchaseOrderQueryService purchaseOrderQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -66,7 +80,7 @@ public class PurchaseOrderResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PurchaseOrderResource purchaseOrderResource = new PurchaseOrderResource(purchaseOrderRepository);
+        final PurchaseOrderResource purchaseOrderResource = new PurchaseOrderResource(purchaseOrderService, purchaseOrderQueryService);
         this.restPurchaseOrderMockMvc = MockMvcBuilders.standaloneSetup(purchaseOrderResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -212,6 +226,304 @@ public class PurchaseOrderResourceIT {
 
     @Test
     @Transactional
+    public void getAllPurchaseOrdersByPoNumberIsEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poNumber equals to DEFAULT_PO_NUMBER
+        defaultPurchaseOrderShouldBeFound("poNumber.equals=" + DEFAULT_PO_NUMBER);
+
+        // Get all the purchaseOrderList where poNumber equals to UPDATED_PO_NUMBER
+        defaultPurchaseOrderShouldNotBeFound("poNumber.equals=" + UPDATED_PO_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoNumberIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poNumber not equals to DEFAULT_PO_NUMBER
+        defaultPurchaseOrderShouldNotBeFound("poNumber.notEquals=" + DEFAULT_PO_NUMBER);
+
+        // Get all the purchaseOrderList where poNumber not equals to UPDATED_PO_NUMBER
+        defaultPurchaseOrderShouldBeFound("poNumber.notEquals=" + UPDATED_PO_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoNumberIsInShouldWork() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poNumber in DEFAULT_PO_NUMBER or UPDATED_PO_NUMBER
+        defaultPurchaseOrderShouldBeFound("poNumber.in=" + DEFAULT_PO_NUMBER + "," + UPDATED_PO_NUMBER);
+
+        // Get all the purchaseOrderList where poNumber equals to UPDATED_PO_NUMBER
+        defaultPurchaseOrderShouldNotBeFound("poNumber.in=" + UPDATED_PO_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoNumberIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poNumber is not null
+        defaultPurchaseOrderShouldBeFound("poNumber.specified=true");
+
+        // Get all the purchaseOrderList where poNumber is null
+        defaultPurchaseOrderShouldNotBeFound("poNumber.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoNumberContainsSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poNumber contains DEFAULT_PO_NUMBER
+        defaultPurchaseOrderShouldBeFound("poNumber.contains=" + DEFAULT_PO_NUMBER);
+
+        // Get all the purchaseOrderList where poNumber contains UPDATED_PO_NUMBER
+        defaultPurchaseOrderShouldNotBeFound("poNumber.contains=" + UPDATED_PO_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoNumberNotContainsSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poNumber does not contain DEFAULT_PO_NUMBER
+        defaultPurchaseOrderShouldNotBeFound("poNumber.doesNotContain=" + DEFAULT_PO_NUMBER);
+
+        // Get all the purchaseOrderList where poNumber does not contain UPDATED_PO_NUMBER
+        defaultPurchaseOrderShouldBeFound("poNumber.doesNotContain=" + UPDATED_PO_NUMBER);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoDateIsEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poDate equals to DEFAULT_PO_DATE
+        defaultPurchaseOrderShouldBeFound("poDate.equals=" + DEFAULT_PO_DATE);
+
+        // Get all the purchaseOrderList where poDate equals to UPDATED_PO_DATE
+        defaultPurchaseOrderShouldNotBeFound("poDate.equals=" + UPDATED_PO_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoDateIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poDate not equals to DEFAULT_PO_DATE
+        defaultPurchaseOrderShouldNotBeFound("poDate.notEquals=" + DEFAULT_PO_DATE);
+
+        // Get all the purchaseOrderList where poDate not equals to UPDATED_PO_DATE
+        defaultPurchaseOrderShouldBeFound("poDate.notEquals=" + UPDATED_PO_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoDateIsInShouldWork() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poDate in DEFAULT_PO_DATE or UPDATED_PO_DATE
+        defaultPurchaseOrderShouldBeFound("poDate.in=" + DEFAULT_PO_DATE + "," + UPDATED_PO_DATE);
+
+        // Get all the purchaseOrderList where poDate equals to UPDATED_PO_DATE
+        defaultPurchaseOrderShouldNotBeFound("poDate.in=" + UPDATED_PO_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoDateIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poDate is not null
+        defaultPurchaseOrderShouldBeFound("poDate.specified=true");
+
+        // Get all the purchaseOrderList where poDate is null
+        defaultPurchaseOrderShouldNotBeFound("poDate.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoDateIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poDate is greater than or equal to DEFAULT_PO_DATE
+        defaultPurchaseOrderShouldBeFound("poDate.greaterThanOrEqual=" + DEFAULT_PO_DATE);
+
+        // Get all the purchaseOrderList where poDate is greater than or equal to UPDATED_PO_DATE
+        defaultPurchaseOrderShouldNotBeFound("poDate.greaterThanOrEqual=" + UPDATED_PO_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoDateIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poDate is less than or equal to DEFAULT_PO_DATE
+        defaultPurchaseOrderShouldBeFound("poDate.lessThanOrEqual=" + DEFAULT_PO_DATE);
+
+        // Get all the purchaseOrderList where poDate is less than or equal to SMALLER_PO_DATE
+        defaultPurchaseOrderShouldNotBeFound("poDate.lessThanOrEqual=" + SMALLER_PO_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoDateIsLessThanSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poDate is less than DEFAULT_PO_DATE
+        defaultPurchaseOrderShouldNotBeFound("poDate.lessThan=" + DEFAULT_PO_DATE);
+
+        // Get all the purchaseOrderList where poDate is less than UPDATED_PO_DATE
+        defaultPurchaseOrderShouldBeFound("poDate.lessThan=" + UPDATED_PO_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByPoDateIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+
+        // Get all the purchaseOrderList where poDate is greater than DEFAULT_PO_DATE
+        defaultPurchaseOrderShouldNotBeFound("poDate.greaterThan=" + DEFAULT_PO_DATE);
+
+        // Get all the purchaseOrderList where poDate is greater than SMALLER_PO_DATE
+        defaultPurchaseOrderShouldBeFound("poDate.greaterThan=" + SMALLER_PO_DATE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByDetailsIsEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        PurchaseOrderDetails details = PurchaseOrderDetailsResourceIT.createEntity(em);
+        em.persist(details);
+        em.flush();
+        purchaseOrder.addDetails(details);
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        Long detailsId = details.getId();
+
+        // Get all the purchaseOrderList where details equals to detailsId
+        defaultPurchaseOrderShouldBeFound("detailsId.equals=" + detailsId);
+
+        // Get all the purchaseOrderList where details equals to detailsId + 1
+        defaultPurchaseOrderShouldNotBeFound("detailsId.equals=" + (detailsId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersBySupplierIsEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        Supplier supplier = SupplierResourceIT.createEntity(em);
+        em.persist(supplier);
+        em.flush();
+        purchaseOrder.setSupplier(supplier);
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        Long supplierId = supplier.getId();
+
+        // Get all the purchaseOrderList where supplier equals to supplierId
+        defaultPurchaseOrderShouldBeFound("supplierId.equals=" + supplierId);
+
+        // Get all the purchaseOrderList where supplier equals to supplierId + 1
+        defaultPurchaseOrderShouldNotBeFound("supplierId.equals=" + (supplierId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByLocationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        Location location = LocationResourceIT.createEntity(em);
+        em.persist(location);
+        em.flush();
+        purchaseOrder.setLocation(location);
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        Long locationId = location.getId();
+
+        // Get all the purchaseOrderList where location equals to locationId
+        defaultPurchaseOrderShouldBeFound("locationId.equals=" + locationId);
+
+        // Get all the purchaseOrderList where location equals to locationId + 1
+        defaultPurchaseOrderShouldNotBeFound("locationId.equals=" + (locationId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllPurchaseOrdersByRelatedGRNIsEqualToSomething() throws Exception {
+        // Initialize the database
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        GoodsReceipt relatedGRN = GoodsReceiptResourceIT.createEntity(em);
+        em.persist(relatedGRN);
+        em.flush();
+        purchaseOrder.setRelatedGRN(relatedGRN);
+        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        Long relatedGRNId = relatedGRN.getId();
+
+        // Get all the purchaseOrderList where relatedGRN equals to relatedGRNId
+        defaultPurchaseOrderShouldBeFound("relatedGRNId.equals=" + relatedGRNId);
+
+        // Get all the purchaseOrderList where relatedGRN equals to relatedGRNId + 1
+        defaultPurchaseOrderShouldNotBeFound("relatedGRNId.equals=" + (relatedGRNId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultPurchaseOrderShouldBeFound(String filter) throws Exception {
+        restPurchaseOrderMockMvc.perform(get("/api/purchase-orders?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(purchaseOrder.getId().intValue())))
+            .andExpect(jsonPath("$.[*].poNumber").value(hasItem(DEFAULT_PO_NUMBER)))
+            .andExpect(jsonPath("$.[*].poDate").value(hasItem(DEFAULT_PO_DATE.toString())));
+
+        // Check, that the count call also returns 1
+        restPurchaseOrderMockMvc.perform(get("/api/purchase-orders/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultPurchaseOrderShouldNotBeFound(String filter) throws Exception {
+        restPurchaseOrderMockMvc.perform(get("/api/purchase-orders?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restPurchaseOrderMockMvc.perform(get("/api/purchase-orders/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingPurchaseOrder() throws Exception {
         // Get the purchaseOrder
         restPurchaseOrderMockMvc.perform(get("/api/purchase-orders/{id}", Long.MAX_VALUE))
@@ -222,7 +534,7 @@ public class PurchaseOrderResourceIT {
     @Transactional
     public void updatePurchaseOrder() throws Exception {
         // Initialize the database
-        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        purchaseOrderService.save(purchaseOrder);
 
         int databaseSizeBeforeUpdate = purchaseOrderRepository.findAll().size();
 
@@ -269,7 +581,7 @@ public class PurchaseOrderResourceIT {
     @Transactional
     public void deletePurchaseOrder() throws Exception {
         // Initialize the database
-        purchaseOrderRepository.saveAndFlush(purchaseOrder);
+        purchaseOrderService.save(purchaseOrder);
 
         int databaseSizeBeforeDelete = purchaseOrderRepository.findAll().size();
 

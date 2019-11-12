@@ -60,7 +60,7 @@ export class JobUpdateComponent implements OnInit {
       this.updateForm(job);
     });
     this.jobStatusService
-      .query({ filter: 'job-is-null' })
+      .query({ 'jobId.specified': 'false' })
       .pipe(
         filter((mayBeOk: HttpResponse<IJobStatus[]>) => mayBeOk.ok),
         map((response: HttpResponse<IJobStatus[]>) => response.body)

@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface JobStatusRepository extends JpaRepository<JobStatus, Long> {
+public interface JobStatusRepository extends JpaRepository<JobStatus, Long>, JpaSpecificationExecutor<JobStatus> {
 
 }

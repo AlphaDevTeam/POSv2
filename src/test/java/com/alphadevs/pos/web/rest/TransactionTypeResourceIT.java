@@ -3,7 +3,10 @@ package com.alphadevs.pos.web.rest;
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.TransactionType;
 import com.alphadevs.pos.repository.TransactionTypeRepository;
+import com.alphadevs.pos.service.TransactionTypeService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.TransactionTypeCriteria;
+import com.alphadevs.pos.service.TransactionTypeQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,12 @@ public class TransactionTypeResourceIT {
     private TransactionTypeRepository transactionTypeRepository;
 
     @Autowired
+    private TransactionTypeService transactionTypeService;
+
+    @Autowired
+    private TransactionTypeQueryService transactionTypeQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -64,7 +73,7 @@ public class TransactionTypeResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final TransactionTypeResource transactionTypeResource = new TransactionTypeResource(transactionTypeRepository);
+        final TransactionTypeResource transactionTypeResource = new TransactionTypeResource(transactionTypeService, transactionTypeQueryService);
         this.restTransactionTypeMockMvc = MockMvcBuilders.standaloneSetup(transactionTypeResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -210,6 +219,197 @@ public class TransactionTypeResourceIT {
 
     @Test
     @Transactional
+    public void getAllTransactionTypesByTransactionypeCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionypeCode equals to DEFAULT_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldBeFound("transactionypeCode.equals=" + DEFAULT_TRANSACTIONYPE_CODE);
+
+        // Get all the transactionTypeList where transactionypeCode equals to UPDATED_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldNotBeFound("transactionypeCode.equals=" + UPDATED_TRANSACTIONYPE_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionypeCodeIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionypeCode not equals to DEFAULT_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldNotBeFound("transactionypeCode.notEquals=" + DEFAULT_TRANSACTIONYPE_CODE);
+
+        // Get all the transactionTypeList where transactionypeCode not equals to UPDATED_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldBeFound("transactionypeCode.notEquals=" + UPDATED_TRANSACTIONYPE_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionypeCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionypeCode in DEFAULT_TRANSACTIONYPE_CODE or UPDATED_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldBeFound("transactionypeCode.in=" + DEFAULT_TRANSACTIONYPE_CODE + "," + UPDATED_TRANSACTIONYPE_CODE);
+
+        // Get all the transactionTypeList where transactionypeCode equals to UPDATED_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldNotBeFound("transactionypeCode.in=" + UPDATED_TRANSACTIONYPE_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionypeCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionypeCode is not null
+        defaultTransactionTypeShouldBeFound("transactionypeCode.specified=true");
+
+        // Get all the transactionTypeList where transactionypeCode is null
+        defaultTransactionTypeShouldNotBeFound("transactionypeCode.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionypeCodeContainsSomething() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionypeCode contains DEFAULT_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldBeFound("transactionypeCode.contains=" + DEFAULT_TRANSACTIONYPE_CODE);
+
+        // Get all the transactionTypeList where transactionypeCode contains UPDATED_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldNotBeFound("transactionypeCode.contains=" + UPDATED_TRANSACTIONYPE_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionypeCodeNotContainsSomething() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionypeCode does not contain DEFAULT_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldNotBeFound("transactionypeCode.doesNotContain=" + DEFAULT_TRANSACTIONYPE_CODE);
+
+        // Get all the transactionTypeList where transactionypeCode does not contain UPDATED_TRANSACTIONYPE_CODE
+        defaultTransactionTypeShouldBeFound("transactionypeCode.doesNotContain=" + UPDATED_TRANSACTIONYPE_CODE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionTypeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionType equals to DEFAULT_TRANSACTION_TYPE
+        defaultTransactionTypeShouldBeFound("transactionType.equals=" + DEFAULT_TRANSACTION_TYPE);
+
+        // Get all the transactionTypeList where transactionType equals to UPDATED_TRANSACTION_TYPE
+        defaultTransactionTypeShouldNotBeFound("transactionType.equals=" + UPDATED_TRANSACTION_TYPE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionTypeIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionType not equals to DEFAULT_TRANSACTION_TYPE
+        defaultTransactionTypeShouldNotBeFound("transactionType.notEquals=" + DEFAULT_TRANSACTION_TYPE);
+
+        // Get all the transactionTypeList where transactionType not equals to UPDATED_TRANSACTION_TYPE
+        defaultTransactionTypeShouldBeFound("transactionType.notEquals=" + UPDATED_TRANSACTION_TYPE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionTypeIsInShouldWork() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionType in DEFAULT_TRANSACTION_TYPE or UPDATED_TRANSACTION_TYPE
+        defaultTransactionTypeShouldBeFound("transactionType.in=" + DEFAULT_TRANSACTION_TYPE + "," + UPDATED_TRANSACTION_TYPE);
+
+        // Get all the transactionTypeList where transactionType equals to UPDATED_TRANSACTION_TYPE
+        defaultTransactionTypeShouldNotBeFound("transactionType.in=" + UPDATED_TRANSACTION_TYPE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionTypeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionType is not null
+        defaultTransactionTypeShouldBeFound("transactionType.specified=true");
+
+        // Get all the transactionTypeList where transactionType is null
+        defaultTransactionTypeShouldNotBeFound("transactionType.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionTypeContainsSomething() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionType contains DEFAULT_TRANSACTION_TYPE
+        defaultTransactionTypeShouldBeFound("transactionType.contains=" + DEFAULT_TRANSACTION_TYPE);
+
+        // Get all the transactionTypeList where transactionType contains UPDATED_TRANSACTION_TYPE
+        defaultTransactionTypeShouldNotBeFound("transactionType.contains=" + UPDATED_TRANSACTION_TYPE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllTransactionTypesByTransactionTypeNotContainsSomething() throws Exception {
+        // Initialize the database
+        transactionTypeRepository.saveAndFlush(transactionType);
+
+        // Get all the transactionTypeList where transactionType does not contain DEFAULT_TRANSACTION_TYPE
+        defaultTransactionTypeShouldNotBeFound("transactionType.doesNotContain=" + DEFAULT_TRANSACTION_TYPE);
+
+        // Get all the transactionTypeList where transactionType does not contain UPDATED_TRANSACTION_TYPE
+        defaultTransactionTypeShouldBeFound("transactionType.doesNotContain=" + UPDATED_TRANSACTION_TYPE);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultTransactionTypeShouldBeFound(String filter) throws Exception {
+        restTransactionTypeMockMvc.perform(get("/api/transaction-types?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(transactionType.getId().intValue())))
+            .andExpect(jsonPath("$.[*].transactionypeCode").value(hasItem(DEFAULT_TRANSACTIONYPE_CODE)))
+            .andExpect(jsonPath("$.[*].transactionType").value(hasItem(DEFAULT_TRANSACTION_TYPE)));
+
+        // Check, that the count call also returns 1
+        restTransactionTypeMockMvc.perform(get("/api/transaction-types/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultTransactionTypeShouldNotBeFound(String filter) throws Exception {
+        restTransactionTypeMockMvc.perform(get("/api/transaction-types?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restTransactionTypeMockMvc.perform(get("/api/transaction-types/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingTransactionType() throws Exception {
         // Get the transactionType
         restTransactionTypeMockMvc.perform(get("/api/transaction-types/{id}", Long.MAX_VALUE))
@@ -220,7 +420,7 @@ public class TransactionTypeResourceIT {
     @Transactional
     public void updateTransactionType() throws Exception {
         // Initialize the database
-        transactionTypeRepository.saveAndFlush(transactionType);
+        transactionTypeService.save(transactionType);
 
         int databaseSizeBeforeUpdate = transactionTypeRepository.findAll().size();
 
@@ -267,7 +467,7 @@ public class TransactionTypeResourceIT {
     @Transactional
     public void deleteTransactionType() throws Exception {
         // Initialize the database
-        transactionTypeRepository.saveAndFlush(transactionType);
+        transactionTypeService.save(transactionType);
 
         int databaseSizeBeforeDelete = transactionTypeRepository.findAll().size();
 

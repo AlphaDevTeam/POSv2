@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.PurchaseAccount;
-import com.alphadevs.pos.repository.PurchaseAccountRepository;
+import com.alphadevs.pos.service.PurchaseAccountService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.PurchaseAccountCriteria;
+import com.alphadevs.pos.service.PurchaseAccountQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class PurchaseAccountResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final PurchaseAccountRepository purchaseAccountRepository;
+    private final PurchaseAccountService purchaseAccountService;
 
-    public PurchaseAccountResource(PurchaseAccountRepository purchaseAccountRepository) {
-        this.purchaseAccountRepository = purchaseAccountRepository;
+    private final PurchaseAccountQueryService purchaseAccountQueryService;
+
+    public PurchaseAccountResource(PurchaseAccountService purchaseAccountService, PurchaseAccountQueryService purchaseAccountQueryService) {
+        this.purchaseAccountService = purchaseAccountService;
+        this.purchaseAccountQueryService = purchaseAccountQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class PurchaseAccountResource {
         if (purchaseAccount.getId() != null) {
             throw new BadRequestAlertException("A new purchaseAccount cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        PurchaseAccount result = purchaseAccountRepository.save(purchaseAccount);
+        PurchaseAccount result = purchaseAccountService.save(purchaseAccount);
         return ResponseEntity.created(new URI("/api/purchase-accounts/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class PurchaseAccountResource {
         if (purchaseAccount.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        PurchaseAccount result = purchaseAccountRepository.save(purchaseAccount);
+        PurchaseAccount result = purchaseAccountService.save(purchaseAccount);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, purchaseAccount.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class PurchaseAccountResource {
      * {@code GET  /purchase-accounts} : get all the purchaseAccounts.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of purchaseAccounts in body.
      */
     @GetMapping("/purchase-accounts")
-    public List<PurchaseAccount> getAllPurchaseAccounts() {
-        log.debug("REST request to get all PurchaseAccounts");
-        return purchaseAccountRepository.findAll();
+    public ResponseEntity<List<PurchaseAccount>> getAllPurchaseAccounts(PurchaseAccountCriteria criteria) {
+        log.debug("REST request to get PurchaseAccounts by criteria: {}", criteria);
+        List<PurchaseAccount> entityList = purchaseAccountQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /purchase-accounts/count} : count all the purchaseAccounts.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/purchase-accounts/count")
+    public ResponseEntity<Long> countPurchaseAccounts(PurchaseAccountCriteria criteria) {
+        log.debug("REST request to count PurchaseAccounts by criteria: {}", criteria);
+        return ResponseEntity.ok().body(purchaseAccountQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class PurchaseAccountResource {
     @GetMapping("/purchase-accounts/{id}")
     public ResponseEntity<PurchaseAccount> getPurchaseAccount(@PathVariable Long id) {
         log.debug("REST request to get PurchaseAccount : {}", id);
-        Optional<PurchaseAccount> purchaseAccount = purchaseAccountRepository.findById(id);
+        Optional<PurchaseAccount> purchaseAccount = purchaseAccountService.findOne(id);
         return ResponseUtil.wrapOrNotFound(purchaseAccount);
     }
 
@@ -113,7 +132,7 @@ public class PurchaseAccountResource {
     @DeleteMapping("/purchase-accounts/{id}")
     public ResponseEntity<Void> deletePurchaseAccount(@PathVariable Long id) {
         log.debug("REST request to delete PurchaseAccount : {}", id);
-        purchaseAccountRepository.deleteById(id);
+        purchaseAccountService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

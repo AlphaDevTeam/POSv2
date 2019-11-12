@@ -2,8 +2,13 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.ItemBinCard;
+import com.alphadevs.pos.domain.Location;
+import com.alphadevs.pos.domain.Items;
 import com.alphadevs.pos.repository.ItemBinCardRepository;
+import com.alphadevs.pos.service.ItemBinCardService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.ItemBinCardCriteria;
+import com.alphadevs.pos.service.ItemBinCardQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,18 +42,27 @@ public class ItemBinCardResourceIT {
 
     private static final LocalDate DEFAULT_TRANSACTION_DATE = LocalDate.ofEpochDay(0L);
     private static final LocalDate UPDATED_TRANSACTION_DATE = LocalDate.now(ZoneId.systemDefault());
+    private static final LocalDate SMALLER_TRANSACTION_DATE = LocalDate.ofEpochDay(-1L);
 
     private static final String DEFAULT_TRANSACTION_DESCRIPTION = "AAAAAAAAAA";
     private static final String UPDATED_TRANSACTION_DESCRIPTION = "BBBBBBBBBB";
 
     private static final Double DEFAULT_TRANSACTION_QTY = 1D;
     private static final Double UPDATED_TRANSACTION_QTY = 2D;
+    private static final Double SMALLER_TRANSACTION_QTY = 1D - 1D;
 
     private static final Double DEFAULT_TRANSACTION_BALANCE = 1D;
     private static final Double UPDATED_TRANSACTION_BALANCE = 2D;
+    private static final Double SMALLER_TRANSACTION_BALANCE = 1D - 1D;
 
     @Autowired
     private ItemBinCardRepository itemBinCardRepository;
+
+    @Autowired
+    private ItemBinCardService itemBinCardService;
+
+    @Autowired
+    private ItemBinCardQueryService itemBinCardQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -72,7 +86,7 @@ public class ItemBinCardResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ItemBinCardResource itemBinCardResource = new ItemBinCardResource(itemBinCardRepository);
+        final ItemBinCardResource itemBinCardResource = new ItemBinCardResource(itemBinCardService, itemBinCardQueryService);
         this.restItemBinCardMockMvc = MockMvcBuilders.standaloneSetup(itemBinCardResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -264,6 +278,476 @@ public class ItemBinCardResourceIT {
 
     @Test
     @Transactional
+    public void getAllItemBinCardsByTransactionDateIsEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDate equals to DEFAULT_TRANSACTION_DATE
+        defaultItemBinCardShouldBeFound("transactionDate.equals=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the itemBinCardList where transactionDate equals to UPDATED_TRANSACTION_DATE
+        defaultItemBinCardShouldNotBeFound("transactionDate.equals=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDateIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDate not equals to DEFAULT_TRANSACTION_DATE
+        defaultItemBinCardShouldNotBeFound("transactionDate.notEquals=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the itemBinCardList where transactionDate not equals to UPDATED_TRANSACTION_DATE
+        defaultItemBinCardShouldBeFound("transactionDate.notEquals=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDateIsInShouldWork() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDate in DEFAULT_TRANSACTION_DATE or UPDATED_TRANSACTION_DATE
+        defaultItemBinCardShouldBeFound("transactionDate.in=" + DEFAULT_TRANSACTION_DATE + "," + UPDATED_TRANSACTION_DATE);
+
+        // Get all the itemBinCardList where transactionDate equals to UPDATED_TRANSACTION_DATE
+        defaultItemBinCardShouldNotBeFound("transactionDate.in=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDateIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDate is not null
+        defaultItemBinCardShouldBeFound("transactionDate.specified=true");
+
+        // Get all the itemBinCardList where transactionDate is null
+        defaultItemBinCardShouldNotBeFound("transactionDate.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDateIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDate is greater than or equal to DEFAULT_TRANSACTION_DATE
+        defaultItemBinCardShouldBeFound("transactionDate.greaterThanOrEqual=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the itemBinCardList where transactionDate is greater than or equal to UPDATED_TRANSACTION_DATE
+        defaultItemBinCardShouldNotBeFound("transactionDate.greaterThanOrEqual=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDateIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDate is less than or equal to DEFAULT_TRANSACTION_DATE
+        defaultItemBinCardShouldBeFound("transactionDate.lessThanOrEqual=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the itemBinCardList where transactionDate is less than or equal to SMALLER_TRANSACTION_DATE
+        defaultItemBinCardShouldNotBeFound("transactionDate.lessThanOrEqual=" + SMALLER_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDateIsLessThanSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDate is less than DEFAULT_TRANSACTION_DATE
+        defaultItemBinCardShouldNotBeFound("transactionDate.lessThan=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the itemBinCardList where transactionDate is less than UPDATED_TRANSACTION_DATE
+        defaultItemBinCardShouldBeFound("transactionDate.lessThan=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDateIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDate is greater than DEFAULT_TRANSACTION_DATE
+        defaultItemBinCardShouldNotBeFound("transactionDate.greaterThan=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the itemBinCardList where transactionDate is greater than SMALLER_TRANSACTION_DATE
+        defaultItemBinCardShouldBeFound("transactionDate.greaterThan=" + SMALLER_TRANSACTION_DATE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDescriptionIsEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDescription equals to DEFAULT_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldBeFound("transactionDescription.equals=" + DEFAULT_TRANSACTION_DESCRIPTION);
+
+        // Get all the itemBinCardList where transactionDescription equals to UPDATED_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldNotBeFound("transactionDescription.equals=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDescriptionIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDescription not equals to DEFAULT_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldNotBeFound("transactionDescription.notEquals=" + DEFAULT_TRANSACTION_DESCRIPTION);
+
+        // Get all the itemBinCardList where transactionDescription not equals to UPDATED_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldBeFound("transactionDescription.notEquals=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDescriptionIsInShouldWork() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDescription in DEFAULT_TRANSACTION_DESCRIPTION or UPDATED_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldBeFound("transactionDescription.in=" + DEFAULT_TRANSACTION_DESCRIPTION + "," + UPDATED_TRANSACTION_DESCRIPTION);
+
+        // Get all the itemBinCardList where transactionDescription equals to UPDATED_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldNotBeFound("transactionDescription.in=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDescriptionIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDescription is not null
+        defaultItemBinCardShouldBeFound("transactionDescription.specified=true");
+
+        // Get all the itemBinCardList where transactionDescription is null
+        defaultItemBinCardShouldNotBeFound("transactionDescription.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDescriptionContainsSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDescription contains DEFAULT_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldBeFound("transactionDescription.contains=" + DEFAULT_TRANSACTION_DESCRIPTION);
+
+        // Get all the itemBinCardList where transactionDescription contains UPDATED_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldNotBeFound("transactionDescription.contains=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionDescriptionNotContainsSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionDescription does not contain DEFAULT_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldNotBeFound("transactionDescription.doesNotContain=" + DEFAULT_TRANSACTION_DESCRIPTION);
+
+        // Get all the itemBinCardList where transactionDescription does not contain UPDATED_TRANSACTION_DESCRIPTION
+        defaultItemBinCardShouldBeFound("transactionDescription.doesNotContain=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionQtyIsEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionQty equals to DEFAULT_TRANSACTION_QTY
+        defaultItemBinCardShouldBeFound("transactionQty.equals=" + DEFAULT_TRANSACTION_QTY);
+
+        // Get all the itemBinCardList where transactionQty equals to UPDATED_TRANSACTION_QTY
+        defaultItemBinCardShouldNotBeFound("transactionQty.equals=" + UPDATED_TRANSACTION_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionQtyIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionQty not equals to DEFAULT_TRANSACTION_QTY
+        defaultItemBinCardShouldNotBeFound("transactionQty.notEquals=" + DEFAULT_TRANSACTION_QTY);
+
+        // Get all the itemBinCardList where transactionQty not equals to UPDATED_TRANSACTION_QTY
+        defaultItemBinCardShouldBeFound("transactionQty.notEquals=" + UPDATED_TRANSACTION_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionQtyIsInShouldWork() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionQty in DEFAULT_TRANSACTION_QTY or UPDATED_TRANSACTION_QTY
+        defaultItemBinCardShouldBeFound("transactionQty.in=" + DEFAULT_TRANSACTION_QTY + "," + UPDATED_TRANSACTION_QTY);
+
+        // Get all the itemBinCardList where transactionQty equals to UPDATED_TRANSACTION_QTY
+        defaultItemBinCardShouldNotBeFound("transactionQty.in=" + UPDATED_TRANSACTION_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionQtyIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionQty is not null
+        defaultItemBinCardShouldBeFound("transactionQty.specified=true");
+
+        // Get all the itemBinCardList where transactionQty is null
+        defaultItemBinCardShouldNotBeFound("transactionQty.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionQtyIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionQty is greater than or equal to DEFAULT_TRANSACTION_QTY
+        defaultItemBinCardShouldBeFound("transactionQty.greaterThanOrEqual=" + DEFAULT_TRANSACTION_QTY);
+
+        // Get all the itemBinCardList where transactionQty is greater than or equal to UPDATED_TRANSACTION_QTY
+        defaultItemBinCardShouldNotBeFound("transactionQty.greaterThanOrEqual=" + UPDATED_TRANSACTION_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionQtyIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionQty is less than or equal to DEFAULT_TRANSACTION_QTY
+        defaultItemBinCardShouldBeFound("transactionQty.lessThanOrEqual=" + DEFAULT_TRANSACTION_QTY);
+
+        // Get all the itemBinCardList where transactionQty is less than or equal to SMALLER_TRANSACTION_QTY
+        defaultItemBinCardShouldNotBeFound("transactionQty.lessThanOrEqual=" + SMALLER_TRANSACTION_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionQtyIsLessThanSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionQty is less than DEFAULT_TRANSACTION_QTY
+        defaultItemBinCardShouldNotBeFound("transactionQty.lessThan=" + DEFAULT_TRANSACTION_QTY);
+
+        // Get all the itemBinCardList where transactionQty is less than UPDATED_TRANSACTION_QTY
+        defaultItemBinCardShouldBeFound("transactionQty.lessThan=" + UPDATED_TRANSACTION_QTY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionQtyIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionQty is greater than DEFAULT_TRANSACTION_QTY
+        defaultItemBinCardShouldNotBeFound("transactionQty.greaterThan=" + DEFAULT_TRANSACTION_QTY);
+
+        // Get all the itemBinCardList where transactionQty is greater than SMALLER_TRANSACTION_QTY
+        defaultItemBinCardShouldBeFound("transactionQty.greaterThan=" + SMALLER_TRANSACTION_QTY);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionBalanceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionBalance equals to DEFAULT_TRANSACTION_BALANCE
+        defaultItemBinCardShouldBeFound("transactionBalance.equals=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the itemBinCardList where transactionBalance equals to UPDATED_TRANSACTION_BALANCE
+        defaultItemBinCardShouldNotBeFound("transactionBalance.equals=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionBalanceIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionBalance not equals to DEFAULT_TRANSACTION_BALANCE
+        defaultItemBinCardShouldNotBeFound("transactionBalance.notEquals=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the itemBinCardList where transactionBalance not equals to UPDATED_TRANSACTION_BALANCE
+        defaultItemBinCardShouldBeFound("transactionBalance.notEquals=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionBalanceIsInShouldWork() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionBalance in DEFAULT_TRANSACTION_BALANCE or UPDATED_TRANSACTION_BALANCE
+        defaultItemBinCardShouldBeFound("transactionBalance.in=" + DEFAULT_TRANSACTION_BALANCE + "," + UPDATED_TRANSACTION_BALANCE);
+
+        // Get all the itemBinCardList where transactionBalance equals to UPDATED_TRANSACTION_BALANCE
+        defaultItemBinCardShouldNotBeFound("transactionBalance.in=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionBalanceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionBalance is not null
+        defaultItemBinCardShouldBeFound("transactionBalance.specified=true");
+
+        // Get all the itemBinCardList where transactionBalance is null
+        defaultItemBinCardShouldNotBeFound("transactionBalance.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionBalanceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionBalance is greater than or equal to DEFAULT_TRANSACTION_BALANCE
+        defaultItemBinCardShouldBeFound("transactionBalance.greaterThanOrEqual=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the itemBinCardList where transactionBalance is greater than or equal to UPDATED_TRANSACTION_BALANCE
+        defaultItemBinCardShouldNotBeFound("transactionBalance.greaterThanOrEqual=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionBalanceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionBalance is less than or equal to DEFAULT_TRANSACTION_BALANCE
+        defaultItemBinCardShouldBeFound("transactionBalance.lessThanOrEqual=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the itemBinCardList where transactionBalance is less than or equal to SMALLER_TRANSACTION_BALANCE
+        defaultItemBinCardShouldNotBeFound("transactionBalance.lessThanOrEqual=" + SMALLER_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionBalanceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionBalance is less than DEFAULT_TRANSACTION_BALANCE
+        defaultItemBinCardShouldNotBeFound("transactionBalance.lessThan=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the itemBinCardList where transactionBalance is less than UPDATED_TRANSACTION_BALANCE
+        defaultItemBinCardShouldBeFound("transactionBalance.lessThan=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByTransactionBalanceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+
+        // Get all the itemBinCardList where transactionBalance is greater than DEFAULT_TRANSACTION_BALANCE
+        defaultItemBinCardShouldNotBeFound("transactionBalance.greaterThan=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the itemBinCardList where transactionBalance is greater than SMALLER_TRANSACTION_BALANCE
+        defaultItemBinCardShouldBeFound("transactionBalance.greaterThan=" + SMALLER_TRANSACTION_BALANCE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByLocationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+        Location location = LocationResourceIT.createEntity(em);
+        em.persist(location);
+        em.flush();
+        itemBinCard.setLocation(location);
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+        Long locationId = location.getId();
+
+        // Get all the itemBinCardList where location equals to locationId
+        defaultItemBinCardShouldBeFound("locationId.equals=" + locationId);
+
+        // Get all the itemBinCardList where location equals to locationId + 1
+        defaultItemBinCardShouldNotBeFound("locationId.equals=" + (locationId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllItemBinCardsByItemIsEqualToSomething() throws Exception {
+        // Initialize the database
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+        Items item = ItemsResourceIT.createEntity(em);
+        em.persist(item);
+        em.flush();
+        itemBinCard.setItem(item);
+        itemBinCardRepository.saveAndFlush(itemBinCard);
+        Long itemId = item.getId();
+
+        // Get all the itemBinCardList where item equals to itemId
+        defaultItemBinCardShouldBeFound("itemId.equals=" + itemId);
+
+        // Get all the itemBinCardList where item equals to itemId + 1
+        defaultItemBinCardShouldNotBeFound("itemId.equals=" + (itemId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultItemBinCardShouldBeFound(String filter) throws Exception {
+        restItemBinCardMockMvc.perform(get("/api/item-bin-cards?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(itemBinCard.getId().intValue())))
+            .andExpect(jsonPath("$.[*].transactionDate").value(hasItem(DEFAULT_TRANSACTION_DATE.toString())))
+            .andExpect(jsonPath("$.[*].transactionDescription").value(hasItem(DEFAULT_TRANSACTION_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].transactionQty").value(hasItem(DEFAULT_TRANSACTION_QTY.doubleValue())))
+            .andExpect(jsonPath("$.[*].transactionBalance").value(hasItem(DEFAULT_TRANSACTION_BALANCE.doubleValue())));
+
+        // Check, that the count call also returns 1
+        restItemBinCardMockMvc.perform(get("/api/item-bin-cards/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultItemBinCardShouldNotBeFound(String filter) throws Exception {
+        restItemBinCardMockMvc.perform(get("/api/item-bin-cards?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restItemBinCardMockMvc.perform(get("/api/item-bin-cards/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingItemBinCard() throws Exception {
         // Get the itemBinCard
         restItemBinCardMockMvc.perform(get("/api/item-bin-cards/{id}", Long.MAX_VALUE))
@@ -274,7 +758,7 @@ public class ItemBinCardResourceIT {
     @Transactional
     public void updateItemBinCard() throws Exception {
         // Initialize the database
-        itemBinCardRepository.saveAndFlush(itemBinCard);
+        itemBinCardService.save(itemBinCard);
 
         int databaseSizeBeforeUpdate = itemBinCardRepository.findAll().size();
 
@@ -325,7 +809,7 @@ public class ItemBinCardResourceIT {
     @Transactional
     public void deleteItemBinCard() throws Exception {
         // Initialize the database
-        itemBinCardRepository.saveAndFlush(itemBinCard);
+        itemBinCardService.save(itemBinCard);
 
         int databaseSizeBeforeDelete = itemBinCardRepository.findAll().size();
 

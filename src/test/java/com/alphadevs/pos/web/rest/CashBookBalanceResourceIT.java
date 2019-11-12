@@ -2,8 +2,12 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.CashBookBalance;
+import com.alphadevs.pos.domain.Location;
 import com.alphadevs.pos.repository.CashBookBalanceRepository;
+import com.alphadevs.pos.service.CashBookBalanceService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.CashBookBalanceCriteria;
+import com.alphadevs.pos.service.CashBookBalanceQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,9 +39,16 @@ public class CashBookBalanceResourceIT {
 
     private static final Double DEFAULT_BALANCE = 1D;
     private static final Double UPDATED_BALANCE = 2D;
+    private static final Double SMALLER_BALANCE = 1D - 1D;
 
     @Autowired
     private CashBookBalanceRepository cashBookBalanceRepository;
+
+    @Autowired
+    private CashBookBalanceService cashBookBalanceService;
+
+    @Autowired
+    private CashBookBalanceQueryService cashBookBalanceQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -61,7 +72,7 @@ public class CashBookBalanceResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CashBookBalanceResource cashBookBalanceResource = new CashBookBalanceResource(cashBookBalanceRepository);
+        final CashBookBalanceResource cashBookBalanceResource = new CashBookBalanceResource(cashBookBalanceService, cashBookBalanceQueryService);
         this.restCashBookBalanceMockMvc = MockMvcBuilders.standaloneSetup(cashBookBalanceResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -184,6 +195,165 @@ public class CashBookBalanceResourceIT {
 
     @Test
     @Transactional
+    public void getAllCashBookBalancesByBalanceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+
+        // Get all the cashBookBalanceList where balance equals to DEFAULT_BALANCE
+        defaultCashBookBalanceShouldBeFound("balance.equals=" + DEFAULT_BALANCE);
+
+        // Get all the cashBookBalanceList where balance equals to UPDATED_BALANCE
+        defaultCashBookBalanceShouldNotBeFound("balance.equals=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBookBalancesByBalanceIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+
+        // Get all the cashBookBalanceList where balance not equals to DEFAULT_BALANCE
+        defaultCashBookBalanceShouldNotBeFound("balance.notEquals=" + DEFAULT_BALANCE);
+
+        // Get all the cashBookBalanceList where balance not equals to UPDATED_BALANCE
+        defaultCashBookBalanceShouldBeFound("balance.notEquals=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBookBalancesByBalanceIsInShouldWork() throws Exception {
+        // Initialize the database
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+
+        // Get all the cashBookBalanceList where balance in DEFAULT_BALANCE or UPDATED_BALANCE
+        defaultCashBookBalanceShouldBeFound("balance.in=" + DEFAULT_BALANCE + "," + UPDATED_BALANCE);
+
+        // Get all the cashBookBalanceList where balance equals to UPDATED_BALANCE
+        defaultCashBookBalanceShouldNotBeFound("balance.in=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBookBalancesByBalanceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+
+        // Get all the cashBookBalanceList where balance is not null
+        defaultCashBookBalanceShouldBeFound("balance.specified=true");
+
+        // Get all the cashBookBalanceList where balance is null
+        defaultCashBookBalanceShouldNotBeFound("balance.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBookBalancesByBalanceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+
+        // Get all the cashBookBalanceList where balance is greater than or equal to DEFAULT_BALANCE
+        defaultCashBookBalanceShouldBeFound("balance.greaterThanOrEqual=" + DEFAULT_BALANCE);
+
+        // Get all the cashBookBalanceList where balance is greater than or equal to UPDATED_BALANCE
+        defaultCashBookBalanceShouldNotBeFound("balance.greaterThanOrEqual=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBookBalancesByBalanceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+
+        // Get all the cashBookBalanceList where balance is less than or equal to DEFAULT_BALANCE
+        defaultCashBookBalanceShouldBeFound("balance.lessThanOrEqual=" + DEFAULT_BALANCE);
+
+        // Get all the cashBookBalanceList where balance is less than or equal to SMALLER_BALANCE
+        defaultCashBookBalanceShouldNotBeFound("balance.lessThanOrEqual=" + SMALLER_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBookBalancesByBalanceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+
+        // Get all the cashBookBalanceList where balance is less than DEFAULT_BALANCE
+        defaultCashBookBalanceShouldNotBeFound("balance.lessThan=" + DEFAULT_BALANCE);
+
+        // Get all the cashBookBalanceList where balance is less than UPDATED_BALANCE
+        defaultCashBookBalanceShouldBeFound("balance.lessThan=" + UPDATED_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBookBalancesByBalanceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+
+        // Get all the cashBookBalanceList where balance is greater than DEFAULT_BALANCE
+        defaultCashBookBalanceShouldNotBeFound("balance.greaterThan=" + DEFAULT_BALANCE);
+
+        // Get all the cashBookBalanceList where balance is greater than SMALLER_BALANCE
+        defaultCashBookBalanceShouldBeFound("balance.greaterThan=" + SMALLER_BALANCE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCashBookBalancesByLocationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+        Location location = LocationResourceIT.createEntity(em);
+        em.persist(location);
+        em.flush();
+        cashBookBalance.setLocation(location);
+        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+        Long locationId = location.getId();
+
+        // Get all the cashBookBalanceList where location equals to locationId
+        defaultCashBookBalanceShouldBeFound("locationId.equals=" + locationId);
+
+        // Get all the cashBookBalanceList where location equals to locationId + 1
+        defaultCashBookBalanceShouldNotBeFound("locationId.equals=" + (locationId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultCashBookBalanceShouldBeFound(String filter) throws Exception {
+        restCashBookBalanceMockMvc.perform(get("/api/cash-book-balances?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(cashBookBalance.getId().intValue())))
+            .andExpect(jsonPath("$.[*].balance").value(hasItem(DEFAULT_BALANCE.doubleValue())));
+
+        // Check, that the count call also returns 1
+        restCashBookBalanceMockMvc.perform(get("/api/cash-book-balances/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultCashBookBalanceShouldNotBeFound(String filter) throws Exception {
+        restCashBookBalanceMockMvc.perform(get("/api/cash-book-balances?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restCashBookBalanceMockMvc.perform(get("/api/cash-book-balances/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingCashBookBalance() throws Exception {
         // Get the cashBookBalance
         restCashBookBalanceMockMvc.perform(get("/api/cash-book-balances/{id}", Long.MAX_VALUE))
@@ -194,7 +364,7 @@ public class CashBookBalanceResourceIT {
     @Transactional
     public void updateCashBookBalance() throws Exception {
         // Initialize the database
-        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+        cashBookBalanceService.save(cashBookBalance);
 
         int databaseSizeBeforeUpdate = cashBookBalanceRepository.findAll().size();
 
@@ -239,7 +409,7 @@ public class CashBookBalanceResourceIT {
     @Transactional
     public void deleteCashBookBalance() throws Exception {
         // Initialize the database
-        cashBookBalanceRepository.saveAndFlush(cashBookBalance);
+        cashBookBalanceService.save(cashBookBalance);
 
         int databaseSizeBeforeDelete = cashBookBalanceRepository.findAll().size();
 

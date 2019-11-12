@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.Job;
-import com.alphadevs.pos.repository.JobRepository;
+import com.alphadevs.pos.service.JobService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.JobCriteria;
+import com.alphadevs.pos.service.JobQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class JobResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final JobRepository jobRepository;
+    private final JobService jobService;
 
-    public JobResource(JobRepository jobRepository) {
-        this.jobRepository = jobRepository;
+    private final JobQueryService jobQueryService;
+
+    public JobResource(JobService jobService, JobQueryService jobQueryService) {
+        this.jobService = jobService;
+        this.jobQueryService = jobQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class JobResource {
         if (job.getId() != null) {
             throw new BadRequestAlertException("A new job cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Job result = jobRepository.save(job);
+        Job result = jobService.save(job);
         return ResponseEntity.created(new URI("/api/jobs/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class JobResource {
         if (job.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Job result = jobRepository.save(job);
+        Job result = jobService.save(job);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, job.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class JobResource {
      * {@code GET  /jobs} : get all the jobs.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of jobs in body.
      */
     @GetMapping("/jobs")
-    public List<Job> getAllJobs() {
-        log.debug("REST request to get all Jobs");
-        return jobRepository.findAll();
+    public ResponseEntity<List<Job>> getAllJobs(JobCriteria criteria) {
+        log.debug("REST request to get Jobs by criteria: {}", criteria);
+        List<Job> entityList = jobQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /jobs/count} : count all the jobs.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/jobs/count")
+    public ResponseEntity<Long> countJobs(JobCriteria criteria) {
+        log.debug("REST request to count Jobs by criteria: {}", criteria);
+        return ResponseEntity.ok().body(jobQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class JobResource {
     @GetMapping("/jobs/{id}")
     public ResponseEntity<Job> getJob(@PathVariable Long id) {
         log.debug("REST request to get Job : {}", id);
-        Optional<Job> job = jobRepository.findById(id);
+        Optional<Job> job = jobService.findOne(id);
         return ResponseUtil.wrapOrNotFound(job);
     }
 
@@ -113,7 +132,7 @@ public class JobResource {
     @DeleteMapping("/jobs/{id}")
     public ResponseEntity<Void> deleteJob(@PathVariable Long id) {
         log.debug("REST request to delete Job : {}", id);
-        jobRepository.deleteById(id);
+        jobService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

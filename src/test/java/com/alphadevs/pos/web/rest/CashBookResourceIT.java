@@ -2,8 +2,13 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.CashBook;
+import com.alphadevs.pos.domain.Location;
+import com.alphadevs.pos.domain.TransactionType;
 import com.alphadevs.pos.repository.CashBookRepository;
+import com.alphadevs.pos.service.CashBookService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.CashBookCriteria;
+import com.alphadevs.pos.service.CashBookQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,21 +42,31 @@ public class CashBookResourceIT {
 
     private static final LocalDate DEFAULT_TRANSACTION_DATE = LocalDate.ofEpochDay(0L);
     private static final LocalDate UPDATED_TRANSACTION_DATE = LocalDate.now(ZoneId.systemDefault());
+    private static final LocalDate SMALLER_TRANSACTION_DATE = LocalDate.ofEpochDay(-1L);
 
     private static final String DEFAULT_TRANSACTION_DESCRIPTION = "AAAAAAAAAA";
     private static final String UPDATED_TRANSACTION_DESCRIPTION = "BBBBBBBBBB";
 
     private static final Double DEFAULT_TRANSACTION_AMOUNT_DR = 1D;
     private static final Double UPDATED_TRANSACTION_AMOUNT_DR = 2D;
+    private static final Double SMALLER_TRANSACTION_AMOUNT_DR = 1D - 1D;
 
     private static final Double DEFAULT_TRANSACTION_AMOUNT_CR = 1D;
     private static final Double UPDATED_TRANSACTION_AMOUNT_CR = 2D;
+    private static final Double SMALLER_TRANSACTION_AMOUNT_CR = 1D - 1D;
 
     private static final Double DEFAULT_TRANSACTION_BALANCE = 1D;
     private static final Double UPDATED_TRANSACTION_BALANCE = 2D;
+    private static final Double SMALLER_TRANSACTION_BALANCE = 1D - 1D;
 
     @Autowired
     private CashBookRepository cashBookRepository;
+
+    @Autowired
+    private CashBookService cashBookService;
+
+    @Autowired
+    private CashBookQueryService cashBookQueryService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -75,7 +90,7 @@ public class CashBookResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CashBookResource cashBookResource = new CashBookResource(cashBookRepository);
+        final CashBookResource cashBookResource = new CashBookResource(cashBookService, cashBookQueryService);
         this.restCashBookMockMvc = MockMvcBuilders.standaloneSetup(cashBookResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -290,6 +305,582 @@ public class CashBookResourceIT {
 
     @Test
     @Transactional
+    public void getAllCashBooksByTransactionDateIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDate equals to DEFAULT_TRANSACTION_DATE
+        defaultCashBookShouldBeFound("transactionDate.equals=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the cashBookList where transactionDate equals to UPDATED_TRANSACTION_DATE
+        defaultCashBookShouldNotBeFound("transactionDate.equals=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDateIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDate not equals to DEFAULT_TRANSACTION_DATE
+        defaultCashBookShouldNotBeFound("transactionDate.notEquals=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the cashBookList where transactionDate not equals to UPDATED_TRANSACTION_DATE
+        defaultCashBookShouldBeFound("transactionDate.notEquals=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDateIsInShouldWork() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDate in DEFAULT_TRANSACTION_DATE or UPDATED_TRANSACTION_DATE
+        defaultCashBookShouldBeFound("transactionDate.in=" + DEFAULT_TRANSACTION_DATE + "," + UPDATED_TRANSACTION_DATE);
+
+        // Get all the cashBookList where transactionDate equals to UPDATED_TRANSACTION_DATE
+        defaultCashBookShouldNotBeFound("transactionDate.in=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDateIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDate is not null
+        defaultCashBookShouldBeFound("transactionDate.specified=true");
+
+        // Get all the cashBookList where transactionDate is null
+        defaultCashBookShouldNotBeFound("transactionDate.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDateIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDate is greater than or equal to DEFAULT_TRANSACTION_DATE
+        defaultCashBookShouldBeFound("transactionDate.greaterThanOrEqual=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the cashBookList where transactionDate is greater than or equal to UPDATED_TRANSACTION_DATE
+        defaultCashBookShouldNotBeFound("transactionDate.greaterThanOrEqual=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDateIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDate is less than or equal to DEFAULT_TRANSACTION_DATE
+        defaultCashBookShouldBeFound("transactionDate.lessThanOrEqual=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the cashBookList where transactionDate is less than or equal to SMALLER_TRANSACTION_DATE
+        defaultCashBookShouldNotBeFound("transactionDate.lessThanOrEqual=" + SMALLER_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDateIsLessThanSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDate is less than DEFAULT_TRANSACTION_DATE
+        defaultCashBookShouldNotBeFound("transactionDate.lessThan=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the cashBookList where transactionDate is less than UPDATED_TRANSACTION_DATE
+        defaultCashBookShouldBeFound("transactionDate.lessThan=" + UPDATED_TRANSACTION_DATE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDateIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDate is greater than DEFAULT_TRANSACTION_DATE
+        defaultCashBookShouldNotBeFound("transactionDate.greaterThan=" + DEFAULT_TRANSACTION_DATE);
+
+        // Get all the cashBookList where transactionDate is greater than SMALLER_TRANSACTION_DATE
+        defaultCashBookShouldBeFound("transactionDate.greaterThan=" + SMALLER_TRANSACTION_DATE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDescriptionIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDescription equals to DEFAULT_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldBeFound("transactionDescription.equals=" + DEFAULT_TRANSACTION_DESCRIPTION);
+
+        // Get all the cashBookList where transactionDescription equals to UPDATED_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldNotBeFound("transactionDescription.equals=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDescriptionIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDescription not equals to DEFAULT_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldNotBeFound("transactionDescription.notEquals=" + DEFAULT_TRANSACTION_DESCRIPTION);
+
+        // Get all the cashBookList where transactionDescription not equals to UPDATED_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldBeFound("transactionDescription.notEquals=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDescriptionIsInShouldWork() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDescription in DEFAULT_TRANSACTION_DESCRIPTION or UPDATED_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldBeFound("transactionDescription.in=" + DEFAULT_TRANSACTION_DESCRIPTION + "," + UPDATED_TRANSACTION_DESCRIPTION);
+
+        // Get all the cashBookList where transactionDescription equals to UPDATED_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldNotBeFound("transactionDescription.in=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDescriptionIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDescription is not null
+        defaultCashBookShouldBeFound("transactionDescription.specified=true");
+
+        // Get all the cashBookList where transactionDescription is null
+        defaultCashBookShouldNotBeFound("transactionDescription.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDescriptionContainsSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDescription contains DEFAULT_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldBeFound("transactionDescription.contains=" + DEFAULT_TRANSACTION_DESCRIPTION);
+
+        // Get all the cashBookList where transactionDescription contains UPDATED_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldNotBeFound("transactionDescription.contains=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionDescriptionNotContainsSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionDescription does not contain DEFAULT_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldNotBeFound("transactionDescription.doesNotContain=" + DEFAULT_TRANSACTION_DESCRIPTION);
+
+        // Get all the cashBookList where transactionDescription does not contain UPDATED_TRANSACTION_DESCRIPTION
+        defaultCashBookShouldBeFound("transactionDescription.doesNotContain=" + UPDATED_TRANSACTION_DESCRIPTION);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountDRIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountDR equals to DEFAULT_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldBeFound("transactionAmountDR.equals=" + DEFAULT_TRANSACTION_AMOUNT_DR);
+
+        // Get all the cashBookList where transactionAmountDR equals to UPDATED_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldNotBeFound("transactionAmountDR.equals=" + UPDATED_TRANSACTION_AMOUNT_DR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountDRIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountDR not equals to DEFAULT_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldNotBeFound("transactionAmountDR.notEquals=" + DEFAULT_TRANSACTION_AMOUNT_DR);
+
+        // Get all the cashBookList where transactionAmountDR not equals to UPDATED_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldBeFound("transactionAmountDR.notEquals=" + UPDATED_TRANSACTION_AMOUNT_DR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountDRIsInShouldWork() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountDR in DEFAULT_TRANSACTION_AMOUNT_DR or UPDATED_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldBeFound("transactionAmountDR.in=" + DEFAULT_TRANSACTION_AMOUNT_DR + "," + UPDATED_TRANSACTION_AMOUNT_DR);
+
+        // Get all the cashBookList where transactionAmountDR equals to UPDATED_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldNotBeFound("transactionAmountDR.in=" + UPDATED_TRANSACTION_AMOUNT_DR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountDRIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountDR is not null
+        defaultCashBookShouldBeFound("transactionAmountDR.specified=true");
+
+        // Get all the cashBookList where transactionAmountDR is null
+        defaultCashBookShouldNotBeFound("transactionAmountDR.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountDRIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountDR is greater than or equal to DEFAULT_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldBeFound("transactionAmountDR.greaterThanOrEqual=" + DEFAULT_TRANSACTION_AMOUNT_DR);
+
+        // Get all the cashBookList where transactionAmountDR is greater than or equal to UPDATED_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldNotBeFound("transactionAmountDR.greaterThanOrEqual=" + UPDATED_TRANSACTION_AMOUNT_DR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountDRIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountDR is less than or equal to DEFAULT_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldBeFound("transactionAmountDR.lessThanOrEqual=" + DEFAULT_TRANSACTION_AMOUNT_DR);
+
+        // Get all the cashBookList where transactionAmountDR is less than or equal to SMALLER_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldNotBeFound("transactionAmountDR.lessThanOrEqual=" + SMALLER_TRANSACTION_AMOUNT_DR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountDRIsLessThanSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountDR is less than DEFAULT_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldNotBeFound("transactionAmountDR.lessThan=" + DEFAULT_TRANSACTION_AMOUNT_DR);
+
+        // Get all the cashBookList where transactionAmountDR is less than UPDATED_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldBeFound("transactionAmountDR.lessThan=" + UPDATED_TRANSACTION_AMOUNT_DR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountDRIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountDR is greater than DEFAULT_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldNotBeFound("transactionAmountDR.greaterThan=" + DEFAULT_TRANSACTION_AMOUNT_DR);
+
+        // Get all the cashBookList where transactionAmountDR is greater than SMALLER_TRANSACTION_AMOUNT_DR
+        defaultCashBookShouldBeFound("transactionAmountDR.greaterThan=" + SMALLER_TRANSACTION_AMOUNT_DR);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountCRIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountCR equals to DEFAULT_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldBeFound("transactionAmountCR.equals=" + DEFAULT_TRANSACTION_AMOUNT_CR);
+
+        // Get all the cashBookList where transactionAmountCR equals to UPDATED_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldNotBeFound("transactionAmountCR.equals=" + UPDATED_TRANSACTION_AMOUNT_CR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountCRIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountCR not equals to DEFAULT_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldNotBeFound("transactionAmountCR.notEquals=" + DEFAULT_TRANSACTION_AMOUNT_CR);
+
+        // Get all the cashBookList where transactionAmountCR not equals to UPDATED_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldBeFound("transactionAmountCR.notEquals=" + UPDATED_TRANSACTION_AMOUNT_CR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountCRIsInShouldWork() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountCR in DEFAULT_TRANSACTION_AMOUNT_CR or UPDATED_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldBeFound("transactionAmountCR.in=" + DEFAULT_TRANSACTION_AMOUNT_CR + "," + UPDATED_TRANSACTION_AMOUNT_CR);
+
+        // Get all the cashBookList where transactionAmountCR equals to UPDATED_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldNotBeFound("transactionAmountCR.in=" + UPDATED_TRANSACTION_AMOUNT_CR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountCRIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountCR is not null
+        defaultCashBookShouldBeFound("transactionAmountCR.specified=true");
+
+        // Get all the cashBookList where transactionAmountCR is null
+        defaultCashBookShouldNotBeFound("transactionAmountCR.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountCRIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountCR is greater than or equal to DEFAULT_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldBeFound("transactionAmountCR.greaterThanOrEqual=" + DEFAULT_TRANSACTION_AMOUNT_CR);
+
+        // Get all the cashBookList where transactionAmountCR is greater than or equal to UPDATED_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldNotBeFound("transactionAmountCR.greaterThanOrEqual=" + UPDATED_TRANSACTION_AMOUNT_CR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountCRIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountCR is less than or equal to DEFAULT_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldBeFound("transactionAmountCR.lessThanOrEqual=" + DEFAULT_TRANSACTION_AMOUNT_CR);
+
+        // Get all the cashBookList where transactionAmountCR is less than or equal to SMALLER_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldNotBeFound("transactionAmountCR.lessThanOrEqual=" + SMALLER_TRANSACTION_AMOUNT_CR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountCRIsLessThanSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountCR is less than DEFAULT_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldNotBeFound("transactionAmountCR.lessThan=" + DEFAULT_TRANSACTION_AMOUNT_CR);
+
+        // Get all the cashBookList where transactionAmountCR is less than UPDATED_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldBeFound("transactionAmountCR.lessThan=" + UPDATED_TRANSACTION_AMOUNT_CR);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionAmountCRIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionAmountCR is greater than DEFAULT_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldNotBeFound("transactionAmountCR.greaterThan=" + DEFAULT_TRANSACTION_AMOUNT_CR);
+
+        // Get all the cashBookList where transactionAmountCR is greater than SMALLER_TRANSACTION_AMOUNT_CR
+        defaultCashBookShouldBeFound("transactionAmountCR.greaterThan=" + SMALLER_TRANSACTION_AMOUNT_CR);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionBalanceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionBalance equals to DEFAULT_TRANSACTION_BALANCE
+        defaultCashBookShouldBeFound("transactionBalance.equals=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the cashBookList where transactionBalance equals to UPDATED_TRANSACTION_BALANCE
+        defaultCashBookShouldNotBeFound("transactionBalance.equals=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionBalanceIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionBalance not equals to DEFAULT_TRANSACTION_BALANCE
+        defaultCashBookShouldNotBeFound("transactionBalance.notEquals=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the cashBookList where transactionBalance not equals to UPDATED_TRANSACTION_BALANCE
+        defaultCashBookShouldBeFound("transactionBalance.notEquals=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionBalanceIsInShouldWork() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionBalance in DEFAULT_TRANSACTION_BALANCE or UPDATED_TRANSACTION_BALANCE
+        defaultCashBookShouldBeFound("transactionBalance.in=" + DEFAULT_TRANSACTION_BALANCE + "," + UPDATED_TRANSACTION_BALANCE);
+
+        // Get all the cashBookList where transactionBalance equals to UPDATED_TRANSACTION_BALANCE
+        defaultCashBookShouldNotBeFound("transactionBalance.in=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionBalanceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionBalance is not null
+        defaultCashBookShouldBeFound("transactionBalance.specified=true");
+
+        // Get all the cashBookList where transactionBalance is null
+        defaultCashBookShouldNotBeFound("transactionBalance.specified=false");
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionBalanceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionBalance is greater than or equal to DEFAULT_TRANSACTION_BALANCE
+        defaultCashBookShouldBeFound("transactionBalance.greaterThanOrEqual=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the cashBookList where transactionBalance is greater than or equal to UPDATED_TRANSACTION_BALANCE
+        defaultCashBookShouldNotBeFound("transactionBalance.greaterThanOrEqual=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionBalanceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionBalance is less than or equal to DEFAULT_TRANSACTION_BALANCE
+        defaultCashBookShouldBeFound("transactionBalance.lessThanOrEqual=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the cashBookList where transactionBalance is less than or equal to SMALLER_TRANSACTION_BALANCE
+        defaultCashBookShouldNotBeFound("transactionBalance.lessThanOrEqual=" + SMALLER_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionBalanceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionBalance is less than DEFAULT_TRANSACTION_BALANCE
+        defaultCashBookShouldNotBeFound("transactionBalance.lessThan=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the cashBookList where transactionBalance is less than UPDATED_TRANSACTION_BALANCE
+        defaultCashBookShouldBeFound("transactionBalance.lessThan=" + UPDATED_TRANSACTION_BALANCE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionBalanceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+
+        // Get all the cashBookList where transactionBalance is greater than DEFAULT_TRANSACTION_BALANCE
+        defaultCashBookShouldNotBeFound("transactionBalance.greaterThan=" + DEFAULT_TRANSACTION_BALANCE);
+
+        // Get all the cashBookList where transactionBalance is greater than SMALLER_TRANSACTION_BALANCE
+        defaultCashBookShouldBeFound("transactionBalance.greaterThan=" + SMALLER_TRANSACTION_BALANCE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByLocationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+        Location location = LocationResourceIT.createEntity(em);
+        em.persist(location);
+        em.flush();
+        cashBook.setLocation(location);
+        cashBookRepository.saveAndFlush(cashBook);
+        Long locationId = location.getId();
+
+        // Get all the cashBookList where location equals to locationId
+        defaultCashBookShouldBeFound("locationId.equals=" + locationId);
+
+        // Get all the cashBookList where location equals to locationId + 1
+        defaultCashBookShouldNotBeFound("locationId.equals=" + (locationId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCashBooksByTransactionTypeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        cashBookRepository.saveAndFlush(cashBook);
+        TransactionType transactionType = TransactionTypeResourceIT.createEntity(em);
+        em.persist(transactionType);
+        em.flush();
+        cashBook.setTransactionType(transactionType);
+        cashBookRepository.saveAndFlush(cashBook);
+        Long transactionTypeId = transactionType.getId();
+
+        // Get all the cashBookList where transactionType equals to transactionTypeId
+        defaultCashBookShouldBeFound("transactionTypeId.equals=" + transactionTypeId);
+
+        // Get all the cashBookList where transactionType equals to transactionTypeId + 1
+        defaultCashBookShouldNotBeFound("transactionTypeId.equals=" + (transactionTypeId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultCashBookShouldBeFound(String filter) throws Exception {
+        restCashBookMockMvc.perform(get("/api/cash-books?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(cashBook.getId().intValue())))
+            .andExpect(jsonPath("$.[*].transactionDate").value(hasItem(DEFAULT_TRANSACTION_DATE.toString())))
+            .andExpect(jsonPath("$.[*].transactionDescription").value(hasItem(DEFAULT_TRANSACTION_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].transactionAmountDR").value(hasItem(DEFAULT_TRANSACTION_AMOUNT_DR.doubleValue())))
+            .andExpect(jsonPath("$.[*].transactionAmountCR").value(hasItem(DEFAULT_TRANSACTION_AMOUNT_CR.doubleValue())))
+            .andExpect(jsonPath("$.[*].transactionBalance").value(hasItem(DEFAULT_TRANSACTION_BALANCE.doubleValue())));
+
+        // Check, that the count call also returns 1
+        restCashBookMockMvc.perform(get("/api/cash-books/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultCashBookShouldNotBeFound(String filter) throws Exception {
+        restCashBookMockMvc.perform(get("/api/cash-books?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restCashBookMockMvc.perform(get("/api/cash-books/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingCashBook() throws Exception {
         // Get the cashBook
         restCashBookMockMvc.perform(get("/api/cash-books/{id}", Long.MAX_VALUE))
@@ -300,7 +891,7 @@ public class CashBookResourceIT {
     @Transactional
     public void updateCashBook() throws Exception {
         // Initialize the database
-        cashBookRepository.saveAndFlush(cashBook);
+        cashBookService.save(cashBook);
 
         int databaseSizeBeforeUpdate = cashBookRepository.findAll().size();
 
@@ -353,7 +944,7 @@ public class CashBookResourceIT {
     @Transactional
     public void deleteCashBook() throws Exception {
         // Initialize the database
-        cashBookRepository.saveAndFlush(cashBook);
+        cashBookService.save(cashBook);
 
         int databaseSizeBeforeDelete = cashBookRepository.findAll().size();
 

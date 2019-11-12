@@ -1,10 +1,12 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.Location;
-import com.alphadevs.pos.repository.LocationRepository;
 import com.alphadevs.pos.security.SecurityUtils;
+import com.alphadevs.pos.service.LocationService;
 import com.alphadevs.pos.service.UserService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.LocationCriteria;
+import com.alphadevs.pos.service.LocationQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -39,12 +41,15 @@ public class LocationResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final LocationRepository locationRepository;
+    private final LocationService locationService;
     private final UserService userService;
 
-    public LocationResource(LocationRepository locationRepository, UserService userService) {
-        this.locationRepository = locationRepository;
+    private final LocationQueryService locationQueryService;
+
+    public LocationResource(LocationService locationService, UserService userService, LocationQueryService locationQueryService) {
+        this.locationService = locationService;
         this.userService = userService;
+        this.locationQueryService = locationQueryService;
     }
 
     /**
@@ -60,7 +65,7 @@ public class LocationResource {
         if (location.getId() != null) {
             throw new BadRequestAlertException("A new location cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Location result = locationRepository.save(location);
+        Location result = locationService.save(location);
         return ResponseEntity.created(new URI("/api/locations/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -81,7 +86,7 @@ public class LocationResource {
         if (location.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Location result = locationRepository.save(location);
+        Location result = locationService.save(location);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, location.getId().toString()))
             .body(result);
@@ -91,18 +96,32 @@ public class LocationResource {
      * {@code GET  /locations} : get all the locations.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of locations in body.
      */
     @GetMapping("/locations")
-    public List<Location> getAllLocations() {
-        log.debug("REST request to get all Locations");
+    public ResponseEntity<List<Location>> getAllLocations(LocationCriteria criteria) {
+        log.debug("REST request to get Locations by criteria: {}", criteria);
         List<Location> locationBasedOnRole = new ArrayList<>();
         if (SecurityUtils.isCurrentUserInRole(ADMIN)){
-            locationBasedOnRole =  locationRepository.findAll();
+            locationBasedOnRole =  locationQueryService.findByCriteria(criteria);
         }else if (SecurityUtils.isCurrentUserInRole(USER)){
             locationBasedOnRole =  userService.getUserLocations();
         }
-        return locationBasedOnRole;
+
+        return ResponseEntity.ok().body(locationBasedOnRole);
+    }
+
+    /**
+    * {@code GET  /locations/count} : count all the locations.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/locations/count")
+    public ResponseEntity<Long> countLocations(LocationCriteria criteria) {
+        log.debug("REST request to count Locations by criteria: {}", criteria);
+        return ResponseEntity.ok().body(locationQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -114,7 +133,7 @@ public class LocationResource {
     @GetMapping("/locations/{id}")
     public ResponseEntity<Location> getLocation(@PathVariable Long id) {
         log.debug("REST request to get Location : {}", id);
-        Optional<Location> location = locationRepository.findById(id);
+        Optional<Location> location = locationService.findOne(id);
         return ResponseUtil.wrapOrNotFound(location);
     }
 
@@ -127,7 +146,7 @@ public class LocationResource {
     @DeleteMapping("/locations/{id}")
     public ResponseEntity<Void> deleteLocation(@PathVariable Long id) {
         log.debug("REST request to delete Location : {}", id);
-        locationRepository.deleteById(id);
+        locationService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

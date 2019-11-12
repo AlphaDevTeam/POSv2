@@ -50,7 +50,7 @@
                 <td>{{items.modifiedStockDate | date:'mediumDate'}}</td>
                 <td>
                     <div *ngIf="items.relatedDesign">
-                        <a [routerLink]="['/desings', items.relatedDesign?.id, 'view' ]" >{{items.relatedDesign?.desingCode}}</a>
+                        <a [routerLink]="['/designs', items.relatedDesign?.id, 'view' ]" >{{items.relatedDesign?.designCode}}</a>
                     </div>
                 </td>
                 <td>

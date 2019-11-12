@@ -2,8 +2,14 @@ package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.ExUser;
+import com.alphadevs.pos.domain.User;
+import com.alphadevs.pos.domain.Company;
+import com.alphadevs.pos.domain.Location;
 import com.alphadevs.pos.repository.ExUserRepository;
+import com.alphadevs.pos.service.ExUserService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.ExUserCriteria;
+import com.alphadevs.pos.service.ExUserQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +53,15 @@ public class ExUserResourceIT {
     @Mock
     private ExUserRepository exUserRepositoryMock;
 
+    @Mock
+    private ExUserService exUserServiceMock;
+
+    @Autowired
+    private ExUserService exUserService;
+
+    @Autowired
+    private ExUserQueryService exUserQueryService;
+
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
@@ -69,7 +84,7 @@ public class ExUserResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ExUserResource exUserResource = new ExUserResource(exUserRepository);
+        final ExUserResource exUserResource = new ExUserResource(exUserService, exUserQueryService);
         this.restExUserMockMvc = MockMvcBuilders.standaloneSetup(exUserResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -160,8 +175,8 @@ public class ExUserResourceIT {
     
     @SuppressWarnings({"unchecked"})
     public void getAllExUsersWithEagerRelationshipsIsEnabled() throws Exception {
-        ExUserResource exUserResource = new ExUserResource(exUserRepositoryMock);
-        when(exUserRepositoryMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
+        ExUserResource exUserResource = new ExUserResource(exUserServiceMock, exUserQueryService);
+        when(exUserServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
 
         MockMvc restExUserMockMvc = MockMvcBuilders.standaloneSetup(exUserResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -172,13 +187,13 @@ public class ExUserResourceIT {
         restExUserMockMvc.perform(get("/api/ex-users?eagerload=true"))
         .andExpect(status().isOk());
 
-        verify(exUserRepositoryMock, times(1)).findAllWithEagerRelationships(any());
+        verify(exUserServiceMock, times(1)).findAllWithEagerRelationships(any());
     }
 
     @SuppressWarnings({"unchecked"})
     public void getAllExUsersWithEagerRelationshipsIsNotEnabled() throws Exception {
-        ExUserResource exUserResource = new ExUserResource(exUserRepositoryMock);
-            when(exUserRepositoryMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
+        ExUserResource exUserResource = new ExUserResource(exUserServiceMock, exUserQueryService);
+            when(exUserServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
             MockMvc restExUserMockMvc = MockMvcBuilders.standaloneSetup(exUserResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -188,7 +203,7 @@ public class ExUserResourceIT {
         restExUserMockMvc.perform(get("/api/ex-users?eagerload=true"))
         .andExpect(status().isOk());
 
-            verify(exUserRepositoryMock, times(1)).findAllWithEagerRelationships(any());
+            verify(exUserServiceMock, times(1)).findAllWithEagerRelationships(any());
     }
 
     @Test
@@ -207,6 +222,178 @@ public class ExUserResourceIT {
 
     @Test
     @Transactional
+    public void getAllExUsersByUserKeyIsEqualToSomething() throws Exception {
+        // Initialize the database
+        exUserRepository.saveAndFlush(exUser);
+
+        // Get all the exUserList where userKey equals to DEFAULT_USER_KEY
+        defaultExUserShouldBeFound("userKey.equals=" + DEFAULT_USER_KEY);
+
+        // Get all the exUserList where userKey equals to UPDATED_USER_KEY
+        defaultExUserShouldNotBeFound("userKey.equals=" + UPDATED_USER_KEY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllExUsersByUserKeyIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        exUserRepository.saveAndFlush(exUser);
+
+        // Get all the exUserList where userKey not equals to DEFAULT_USER_KEY
+        defaultExUserShouldNotBeFound("userKey.notEquals=" + DEFAULT_USER_KEY);
+
+        // Get all the exUserList where userKey not equals to UPDATED_USER_KEY
+        defaultExUserShouldBeFound("userKey.notEquals=" + UPDATED_USER_KEY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllExUsersByUserKeyIsInShouldWork() throws Exception {
+        // Initialize the database
+        exUserRepository.saveAndFlush(exUser);
+
+        // Get all the exUserList where userKey in DEFAULT_USER_KEY or UPDATED_USER_KEY
+        defaultExUserShouldBeFound("userKey.in=" + DEFAULT_USER_KEY + "," + UPDATED_USER_KEY);
+
+        // Get all the exUserList where userKey equals to UPDATED_USER_KEY
+        defaultExUserShouldNotBeFound("userKey.in=" + UPDATED_USER_KEY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllExUsersByUserKeyIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        exUserRepository.saveAndFlush(exUser);
+
+        // Get all the exUserList where userKey is not null
+        defaultExUserShouldBeFound("userKey.specified=true");
+
+        // Get all the exUserList where userKey is null
+        defaultExUserShouldNotBeFound("userKey.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllExUsersByUserKeyContainsSomething() throws Exception {
+        // Initialize the database
+        exUserRepository.saveAndFlush(exUser);
+
+        // Get all the exUserList where userKey contains DEFAULT_USER_KEY
+        defaultExUserShouldBeFound("userKey.contains=" + DEFAULT_USER_KEY);
+
+        // Get all the exUserList where userKey contains UPDATED_USER_KEY
+        defaultExUserShouldNotBeFound("userKey.contains=" + UPDATED_USER_KEY);
+    }
+
+    @Test
+    @Transactional
+    public void getAllExUsersByUserKeyNotContainsSomething() throws Exception {
+        // Initialize the database
+        exUserRepository.saveAndFlush(exUser);
+
+        // Get all the exUserList where userKey does not contain DEFAULT_USER_KEY
+        defaultExUserShouldNotBeFound("userKey.doesNotContain=" + DEFAULT_USER_KEY);
+
+        // Get all the exUserList where userKey does not contain UPDATED_USER_KEY
+        defaultExUserShouldBeFound("userKey.doesNotContain=" + UPDATED_USER_KEY);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllExUsersByRelatedUserIsEqualToSomething() throws Exception {
+        // Initialize the database
+        exUserRepository.saveAndFlush(exUser);
+        User relatedUser = UserResourceIT.createEntity(em);
+        em.persist(relatedUser);
+        em.flush();
+        exUser.setRelatedUser(relatedUser);
+        exUserRepository.saveAndFlush(exUser);
+        Long relatedUserId = relatedUser.getId();
+
+        // Get all the exUserList where relatedUser equals to relatedUserId
+        defaultExUserShouldBeFound("relatedUserId.equals=" + relatedUserId);
+
+        // Get all the exUserList where relatedUser equals to relatedUserId + 1
+        defaultExUserShouldNotBeFound("relatedUserId.equals=" + (relatedUserId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllExUsersByCompanyIsEqualToSomething() throws Exception {
+        // Initialize the database
+        exUserRepository.saveAndFlush(exUser);
+        Company company = CompanyResourceIT.createEntity(em);
+        em.persist(company);
+        em.flush();
+        exUser.setCompany(company);
+        exUserRepository.saveAndFlush(exUser);
+        Long companyId = company.getId();
+
+        // Get all the exUserList where company equals to companyId
+        defaultExUserShouldBeFound("companyId.equals=" + companyId);
+
+        // Get all the exUserList where company equals to companyId + 1
+        defaultExUserShouldNotBeFound("companyId.equals=" + (companyId + 1));
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllExUsersByLocationsIsEqualToSomething() throws Exception {
+        // Initialize the database
+        exUserRepository.saveAndFlush(exUser);
+        Location locations = LocationResourceIT.createEntity(em);
+        em.persist(locations);
+        em.flush();
+        exUser.addLocations(locations);
+        exUserRepository.saveAndFlush(exUser);
+        Long locationsId = locations.getId();
+
+        // Get all the exUserList where locations equals to locationsId
+        defaultExUserShouldBeFound("locationsId.equals=" + locationsId);
+
+        // Get all the exUserList where locations equals to locationsId + 1
+        defaultExUserShouldNotBeFound("locationsId.equals=" + (locationsId + 1));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultExUserShouldBeFound(String filter) throws Exception {
+        restExUserMockMvc.perform(get("/api/ex-users?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(exUser.getId().intValue())))
+            .andExpect(jsonPath("$.[*].userKey").value(hasItem(DEFAULT_USER_KEY)));
+
+        // Check, that the count call also returns 1
+        restExUserMockMvc.perform(get("/api/ex-users/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultExUserShouldNotBeFound(String filter) throws Exception {
+        restExUserMockMvc.perform(get("/api/ex-users?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restExUserMockMvc.perform(get("/api/ex-users/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingExUser() throws Exception {
         // Get the exUser
         restExUserMockMvc.perform(get("/api/ex-users/{id}", Long.MAX_VALUE))
@@ -217,7 +404,7 @@ public class ExUserResourceIT {
     @Transactional
     public void updateExUser() throws Exception {
         // Initialize the database
-        exUserRepository.saveAndFlush(exUser);
+        exUserService.save(exUser);
 
         int databaseSizeBeforeUpdate = exUserRepository.findAll().size();
 
@@ -262,7 +449,7 @@ public class ExUserResourceIT {
     @Transactional
     public void deleteExUser() throws Exception {
         // Initialize the database
-        exUserRepository.saveAndFlush(exUser);
+        exUserService.save(exUser);
 
         int databaseSizeBeforeDelete = exUserRepository.findAll().size();
 

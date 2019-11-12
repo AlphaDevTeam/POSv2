@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.Items;
-import com.alphadevs.pos.repository.ItemsRepository;
+import com.alphadevs.pos.service.ItemsService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.ItemsCriteria;
+import com.alphadevs.pos.service.ItemsQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class ItemsResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final ItemsRepository itemsRepository;
+    private final ItemsService itemsService;
 
-    public ItemsResource(ItemsRepository itemsRepository) {
-        this.itemsRepository = itemsRepository;
+    private final ItemsQueryService itemsQueryService;
+
+    public ItemsResource(ItemsService itemsService, ItemsQueryService itemsQueryService) {
+        this.itemsService = itemsService;
+        this.itemsQueryService = itemsQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class ItemsResource {
         if (items.getId() != null) {
             throw new BadRequestAlertException("A new items cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Items result = itemsRepository.save(items);
+        Items result = itemsService.save(items);
         return ResponseEntity.created(new URI("/api/items/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class ItemsResource {
         if (items.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Items result = itemsRepository.save(items);
+        Items result = itemsService.save(items);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, items.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class ItemsResource {
      * {@code GET  /items} : get all the items.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of items in body.
      */
     @GetMapping("/items")
-    public List<Items> getAllItems() {
-        log.debug("REST request to get all Items");
-        return itemsRepository.findAll();
+    public ResponseEntity<List<Items>> getAllItems(ItemsCriteria criteria) {
+        log.debug("REST request to get Items by criteria: {}", criteria);
+        List<Items> entityList = itemsQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /items/count} : count all the items.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/items/count")
+    public ResponseEntity<Long> countItems(ItemsCriteria criteria) {
+        log.debug("REST request to count Items by criteria: {}", criteria);
+        return ResponseEntity.ok().body(itemsQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class ItemsResource {
     @GetMapping("/items/{id}")
     public ResponseEntity<Items> getItems(@PathVariable Long id) {
         log.debug("REST request to get Items : {}", id);
-        Optional<Items> items = itemsRepository.findById(id);
+        Optional<Items> items = itemsService.findOne(id);
         return ResponseUtil.wrapOrNotFound(items);
     }
 
@@ -113,7 +132,7 @@ public class ItemsResource {
     @DeleteMapping("/items/{id}")
     public ResponseEntity<Void> deleteItems(@PathVariable Long id) {
         log.debug("REST request to delete Items : {}", id);
-        itemsRepository.deleteById(id);
+        itemsService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

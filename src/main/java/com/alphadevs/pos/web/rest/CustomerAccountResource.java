@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.CustomerAccount;
-import com.alphadevs.pos.repository.CustomerAccountRepository;
+import com.alphadevs.pos.service.CustomerAccountService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.CustomerAccountCriteria;
+import com.alphadevs.pos.service.CustomerAccountQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class CustomerAccountResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final CustomerAccountRepository customerAccountRepository;
+    private final CustomerAccountService customerAccountService;
 
-    public CustomerAccountResource(CustomerAccountRepository customerAccountRepository) {
-        this.customerAccountRepository = customerAccountRepository;
+    private final CustomerAccountQueryService customerAccountQueryService;
+
+    public CustomerAccountResource(CustomerAccountService customerAccountService, CustomerAccountQueryService customerAccountQueryService) {
+        this.customerAccountService = customerAccountService;
+        this.customerAccountQueryService = customerAccountQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class CustomerAccountResource {
         if (customerAccount.getId() != null) {
             throw new BadRequestAlertException("A new customerAccount cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        CustomerAccount result = customerAccountRepository.save(customerAccount);
+        CustomerAccount result = customerAccountService.save(customerAccount);
         return ResponseEntity.created(new URI("/api/customer-accounts/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class CustomerAccountResource {
         if (customerAccount.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        CustomerAccount result = customerAccountRepository.save(customerAccount);
+        CustomerAccount result = customerAccountService.save(customerAccount);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, customerAccount.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class CustomerAccountResource {
      * {@code GET  /customer-accounts} : get all the customerAccounts.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of customerAccounts in body.
      */
     @GetMapping("/customer-accounts")
-    public List<CustomerAccount> getAllCustomerAccounts() {
-        log.debug("REST request to get all CustomerAccounts");
-        return customerAccountRepository.findAll();
+    public ResponseEntity<List<CustomerAccount>> getAllCustomerAccounts(CustomerAccountCriteria criteria) {
+        log.debug("REST request to get CustomerAccounts by criteria: {}", criteria);
+        List<CustomerAccount> entityList = customerAccountQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /customer-accounts/count} : count all the customerAccounts.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/customer-accounts/count")
+    public ResponseEntity<Long> countCustomerAccounts(CustomerAccountCriteria criteria) {
+        log.debug("REST request to count CustomerAccounts by criteria: {}", criteria);
+        return ResponseEntity.ok().body(customerAccountQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class CustomerAccountResource {
     @GetMapping("/customer-accounts/{id}")
     public ResponseEntity<CustomerAccount> getCustomerAccount(@PathVariable Long id) {
         log.debug("REST request to get CustomerAccount : {}", id);
-        Optional<CustomerAccount> customerAccount = customerAccountRepository.findById(id);
+        Optional<CustomerAccount> customerAccount = customerAccountService.findOne(id);
         return ResponseUtil.wrapOrNotFound(customerAccount);
     }
 
@@ -113,7 +132,7 @@ public class CustomerAccountResource {
     @DeleteMapping("/customer-accounts/{id}")
     public ResponseEntity<Void> deleteCustomerAccount(@PathVariable Long id) {
         log.debug("REST request to delete CustomerAccount : {}", id);
-        customerAccountRepository.deleteById(id);
+        customerAccountService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

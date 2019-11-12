@@ -34,13 +34,13 @@
                 <dt><span>Location</span></dt>
                 <dd>
                     <div *ngIf="job.location">
-                        <a [routerLink]="['/location', job.location?.id, 'view']">{{job.location?.id}}</a>
+                        <a [routerLink]="['/location', job.location?.id, 'view']">{{job.location?.locationCode}}</a>
                     </div>
                 </dd>
                 <dt><span>Customer</span></dt>
                 <dd>
                     <div *ngIf="job.customer">
-                        <a [routerLink]="['/customer', job.customer?.id, 'view']">{{job.customer?.id}}</a>
+                        <a [routerLink]="['/customer', job.customer?.id, 'view']">{{job.customer?.customerCode}}</a>
                     </div>
                 </dd>
             </dl>

@@ -28,7 +28,7 @@
                 <dt><span>Location</span></dt>
                 <dd>
                     <div *ngIf="cashBook.location">
-                        <a [routerLink]="['/location', cashBook.location?.id, 'view']">{{cashBook.location?.id}}</a>
+                        <a [routerLink]="['/location', cashBook.location?.id, 'view']">{{cashBook.location?.locationCode}}</a>
                     </div>
                 </dd>
                 <dt><span>Transaction Type</span></dt>

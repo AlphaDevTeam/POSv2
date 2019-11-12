@@ -1,5 +1,5 @@
 import { Moment } from 'moment';
-import { IDesings } from 'app/shared/model/desings.model';
+import { IDesigns } from 'app/shared/model/designs.model';
 import { IProducts } from 'app/shared/model/products.model';
 import { ILocation } from 'app/shared/model/location.model';
 
@@ -15,7 +15,7 @@ export interface IItems {
   itemSalePrice?: number;
   originalStockDate?: Moment;
   modifiedStockDate?: Moment;
-  relatedDesign?: IDesings;
+  relatedDesign?: IDesigns;
   relatedProduct?: IProducts;
   location?: ILocation;
 }
@@ -33,7 +33,7 @@ export class Items implements IItems {
     public itemSalePrice?: number,
     public originalStockDate?: Moment,
     public modifiedStockDate?: Moment,
-    public relatedDesign?: IDesings,
+    public relatedDesign?: IDesigns,
     public relatedProduct?: IProducts,
     public location?: ILocation
   ) {}

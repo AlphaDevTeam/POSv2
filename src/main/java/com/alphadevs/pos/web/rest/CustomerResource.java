@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.Customer;
-import com.alphadevs.pos.repository.CustomerRepository;
+import com.alphadevs.pos.service.CustomerService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.CustomerCriteria;
+import com.alphadevs.pos.service.CustomerQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class CustomerResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
 
-    public CustomerResource(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
+    private final CustomerQueryService customerQueryService;
+
+    public CustomerResource(CustomerService customerService, CustomerQueryService customerQueryService) {
+        this.customerService = customerService;
+        this.customerQueryService = customerQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class CustomerResource {
         if (customer.getId() != null) {
             throw new BadRequestAlertException("A new customer cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Customer result = customerRepository.save(customer);
+        Customer result = customerService.save(customer);
         return ResponseEntity.created(new URI("/api/customers/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class CustomerResource {
         if (customer.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Customer result = customerRepository.save(customer);
+        Customer result = customerService.save(customer);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, customer.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class CustomerResource {
      * {@code GET  /customers} : get all the customers.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of customers in body.
      */
     @GetMapping("/customers")
-    public List<Customer> getAllCustomers() {
-        log.debug("REST request to get all Customers");
-        return customerRepository.findAll();
+    public ResponseEntity<List<Customer>> getAllCustomers(CustomerCriteria criteria) {
+        log.debug("REST request to get Customers by criteria: {}", criteria);
+        List<Customer> entityList = customerQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /customers/count} : count all the customers.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/customers/count")
+    public ResponseEntity<Long> countCustomers(CustomerCriteria criteria) {
+        log.debug("REST request to count Customers by criteria: {}", criteria);
+        return ResponseEntity.ok().body(customerQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class CustomerResource {
     @GetMapping("/customers/{id}")
     public ResponseEntity<Customer> getCustomer(@PathVariable Long id) {
         log.debug("REST request to get Customer : {}", id);
-        Optional<Customer> customer = customerRepository.findById(id);
+        Optional<Customer> customer = customerService.findOne(id);
         return ResponseUtil.wrapOrNotFound(customer);
     }
 
@@ -113,7 +132,7 @@ public class CustomerResource {
     @DeleteMapping("/customers/{id}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
         log.debug("REST request to delete Customer : {}", id);
-        customerRepository.deleteById(id);
+        customerService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

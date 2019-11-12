@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.ExUser;
-import com.alphadevs.pos.repository.ExUserRepository;
+import com.alphadevs.pos.service.ExUserService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.ExUserCriteria;
+import com.alphadevs.pos.service.ExUserQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -32,10 +34,13 @@ public class ExUserResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final ExUserRepository exUserRepository;
+    private final ExUserService exUserService;
 
-    public ExUserResource(ExUserRepository exUserRepository) {
-        this.exUserRepository = exUserRepository;
+    private final ExUserQueryService exUserQueryService;
+
+    public ExUserResource(ExUserService exUserService, ExUserQueryService exUserQueryService) {
+        this.exUserService = exUserService;
+        this.exUserQueryService = exUserQueryService;
     }
 
     /**
@@ -51,7 +56,7 @@ public class ExUserResource {
         if (exUser.getId() != null) {
             throw new BadRequestAlertException("A new exUser cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        ExUser result = exUserRepository.save(exUser);
+        ExUser result = exUserService.save(exUser);
         return ResponseEntity.created(new URI("/api/ex-users/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -72,7 +77,7 @@ public class ExUserResource {
         if (exUser.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        ExUser result = exUserRepository.save(exUser);
+        ExUser result = exUserService.save(exUser);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, exUser.getId().toString()))
             .body(result);
@@ -81,13 +86,27 @@ public class ExUserResource {
     /**
      * {@code GET  /ex-users} : get all the exUsers.
      *
-     * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many).
+
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of exUsers in body.
      */
     @GetMapping("/ex-users")
-    public List<ExUser> getAllExUsers(@RequestParam(required = false, defaultValue = "false") boolean eagerload) {
-        log.debug("REST request to get all ExUsers");
-        return exUserRepository.findAllWithEagerRelationships();
+    public ResponseEntity<List<ExUser>> getAllExUsers(ExUserCriteria criteria) {
+        log.debug("REST request to get ExUsers by criteria: {}", criteria);
+        List<ExUser> entityList = exUserQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /ex-users/count} : count all the exUsers.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/ex-users/count")
+    public ResponseEntity<Long> countExUsers(ExUserCriteria criteria) {
+        log.debug("REST request to count ExUsers by criteria: {}", criteria);
+        return ResponseEntity.ok().body(exUserQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -99,7 +118,7 @@ public class ExUserResource {
     @GetMapping("/ex-users/{id}")
     public ResponseEntity<ExUser> getExUser(@PathVariable Long id) {
         log.debug("REST request to get ExUser : {}", id);
-        Optional<ExUser> exUser = exUserRepository.findOneWithEagerRelationships(id);
+        Optional<ExUser> exUser = exUserService.findOne(id);
         return ResponseUtil.wrapOrNotFound(exUser);
     }
 
@@ -112,7 +131,7 @@ public class ExUserResource {
     @DeleteMapping("/ex-users/{id}")
     public ResponseEntity<Void> deleteExUser(@PathVariable Long id) {
         log.debug("REST request to delete ExUser : {}", id);
-        exUserRepository.deleteById(id);
+        exUserService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

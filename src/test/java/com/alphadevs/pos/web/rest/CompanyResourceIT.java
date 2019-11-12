@@ -3,7 +3,10 @@ package com.alphadevs.pos.web.rest;
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.Company;
 import com.alphadevs.pos.repository.CompanyRepository;
+import com.alphadevs.pos.service.CompanyService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.CompanyCriteria;
+import com.alphadevs.pos.service.CompanyQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +49,12 @@ public class CompanyResourceIT {
     private CompanyRepository companyRepository;
 
     @Autowired
+    private CompanyService companyService;
+
+    @Autowired
+    private CompanyQueryService companyQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -67,7 +76,7 @@ public class CompanyResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CompanyResource companyResource = new CompanyResource(companyRepository);
+        final CompanyResource companyResource = new CompanyResource(companyService, companyQueryService);
         this.restCompanyMockMvc = MockMvcBuilders.standaloneSetup(companyResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -236,6 +245,276 @@ public class CompanyResourceIT {
 
     @Test
     @Transactional
+    public void getAllCompaniesByCompanyCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyCode equals to DEFAULT_COMPANY_CODE
+        defaultCompanyShouldBeFound("companyCode.equals=" + DEFAULT_COMPANY_CODE);
+
+        // Get all the companyList where companyCode equals to UPDATED_COMPANY_CODE
+        defaultCompanyShouldNotBeFound("companyCode.equals=" + UPDATED_COMPANY_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyCodeIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyCode not equals to DEFAULT_COMPANY_CODE
+        defaultCompanyShouldNotBeFound("companyCode.notEquals=" + DEFAULT_COMPANY_CODE);
+
+        // Get all the companyList where companyCode not equals to UPDATED_COMPANY_CODE
+        defaultCompanyShouldBeFound("companyCode.notEquals=" + UPDATED_COMPANY_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyCode in DEFAULT_COMPANY_CODE or UPDATED_COMPANY_CODE
+        defaultCompanyShouldBeFound("companyCode.in=" + DEFAULT_COMPANY_CODE + "," + UPDATED_COMPANY_CODE);
+
+        // Get all the companyList where companyCode equals to UPDATED_COMPANY_CODE
+        defaultCompanyShouldNotBeFound("companyCode.in=" + UPDATED_COMPANY_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyCode is not null
+        defaultCompanyShouldBeFound("companyCode.specified=true");
+
+        // Get all the companyList where companyCode is null
+        defaultCompanyShouldNotBeFound("companyCode.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllCompaniesByCompanyCodeContainsSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyCode contains DEFAULT_COMPANY_CODE
+        defaultCompanyShouldBeFound("companyCode.contains=" + DEFAULT_COMPANY_CODE);
+
+        // Get all the companyList where companyCode contains UPDATED_COMPANY_CODE
+        defaultCompanyShouldNotBeFound("companyCode.contains=" + UPDATED_COMPANY_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyCodeNotContainsSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyCode does not contain DEFAULT_COMPANY_CODE
+        defaultCompanyShouldNotBeFound("companyCode.doesNotContain=" + DEFAULT_COMPANY_CODE);
+
+        // Get all the companyList where companyCode does not contain UPDATED_COMPANY_CODE
+        defaultCompanyShouldBeFound("companyCode.doesNotContain=" + UPDATED_COMPANY_CODE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyName equals to DEFAULT_COMPANY_NAME
+        defaultCompanyShouldBeFound("companyName.equals=" + DEFAULT_COMPANY_NAME);
+
+        // Get all the companyList where companyName equals to UPDATED_COMPANY_NAME
+        defaultCompanyShouldNotBeFound("companyName.equals=" + UPDATED_COMPANY_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyNameIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyName not equals to DEFAULT_COMPANY_NAME
+        defaultCompanyShouldNotBeFound("companyName.notEquals=" + DEFAULT_COMPANY_NAME);
+
+        // Get all the companyList where companyName not equals to UPDATED_COMPANY_NAME
+        defaultCompanyShouldBeFound("companyName.notEquals=" + UPDATED_COMPANY_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyName in DEFAULT_COMPANY_NAME or UPDATED_COMPANY_NAME
+        defaultCompanyShouldBeFound("companyName.in=" + DEFAULT_COMPANY_NAME + "," + UPDATED_COMPANY_NAME);
+
+        // Get all the companyList where companyName equals to UPDATED_COMPANY_NAME
+        defaultCompanyShouldNotBeFound("companyName.in=" + UPDATED_COMPANY_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyName is not null
+        defaultCompanyShouldBeFound("companyName.specified=true");
+
+        // Get all the companyList where companyName is null
+        defaultCompanyShouldNotBeFound("companyName.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllCompaniesByCompanyNameContainsSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyName contains DEFAULT_COMPANY_NAME
+        defaultCompanyShouldBeFound("companyName.contains=" + DEFAULT_COMPANY_NAME);
+
+        // Get all the companyList where companyName contains UPDATED_COMPANY_NAME
+        defaultCompanyShouldNotBeFound("companyName.contains=" + UPDATED_COMPANY_NAME);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyNameNotContainsSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyName does not contain DEFAULT_COMPANY_NAME
+        defaultCompanyShouldNotBeFound("companyName.doesNotContain=" + DEFAULT_COMPANY_NAME);
+
+        // Get all the companyList where companyName does not contain UPDATED_COMPANY_NAME
+        defaultCompanyShouldBeFound("companyName.doesNotContain=" + UPDATED_COMPANY_NAME);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyRegNumberIsEqualToSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyRegNumber equals to DEFAULT_COMPANY_REG_NUMBER
+        defaultCompanyShouldBeFound("companyRegNumber.equals=" + DEFAULT_COMPANY_REG_NUMBER);
+
+        // Get all the companyList where companyRegNumber equals to UPDATED_COMPANY_REG_NUMBER
+        defaultCompanyShouldNotBeFound("companyRegNumber.equals=" + UPDATED_COMPANY_REG_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyRegNumberIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyRegNumber not equals to DEFAULT_COMPANY_REG_NUMBER
+        defaultCompanyShouldNotBeFound("companyRegNumber.notEquals=" + DEFAULT_COMPANY_REG_NUMBER);
+
+        // Get all the companyList where companyRegNumber not equals to UPDATED_COMPANY_REG_NUMBER
+        defaultCompanyShouldBeFound("companyRegNumber.notEquals=" + UPDATED_COMPANY_REG_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyRegNumberIsInShouldWork() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyRegNumber in DEFAULT_COMPANY_REG_NUMBER or UPDATED_COMPANY_REG_NUMBER
+        defaultCompanyShouldBeFound("companyRegNumber.in=" + DEFAULT_COMPANY_REG_NUMBER + "," + UPDATED_COMPANY_REG_NUMBER);
+
+        // Get all the companyList where companyRegNumber equals to UPDATED_COMPANY_REG_NUMBER
+        defaultCompanyShouldNotBeFound("companyRegNumber.in=" + UPDATED_COMPANY_REG_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyRegNumberIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyRegNumber is not null
+        defaultCompanyShouldBeFound("companyRegNumber.specified=true");
+
+        // Get all the companyList where companyRegNumber is null
+        defaultCompanyShouldNotBeFound("companyRegNumber.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllCompaniesByCompanyRegNumberContainsSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyRegNumber contains DEFAULT_COMPANY_REG_NUMBER
+        defaultCompanyShouldBeFound("companyRegNumber.contains=" + DEFAULT_COMPANY_REG_NUMBER);
+
+        // Get all the companyList where companyRegNumber contains UPDATED_COMPANY_REG_NUMBER
+        defaultCompanyShouldNotBeFound("companyRegNumber.contains=" + UPDATED_COMPANY_REG_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    public void getAllCompaniesByCompanyRegNumberNotContainsSomething() throws Exception {
+        // Initialize the database
+        companyRepository.saveAndFlush(company);
+
+        // Get all the companyList where companyRegNumber does not contain DEFAULT_COMPANY_REG_NUMBER
+        defaultCompanyShouldNotBeFound("companyRegNumber.doesNotContain=" + DEFAULT_COMPANY_REG_NUMBER);
+
+        // Get all the companyList where companyRegNumber does not contain UPDATED_COMPANY_REG_NUMBER
+        defaultCompanyShouldBeFound("companyRegNumber.doesNotContain=" + UPDATED_COMPANY_REG_NUMBER);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultCompanyShouldBeFound(String filter) throws Exception {
+        restCompanyMockMvc.perform(get("/api/companies?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(company.getId().intValue())))
+            .andExpect(jsonPath("$.[*].companyCode").value(hasItem(DEFAULT_COMPANY_CODE)))
+            .andExpect(jsonPath("$.[*].companyName").value(hasItem(DEFAULT_COMPANY_NAME)))
+            .andExpect(jsonPath("$.[*].companyRegNumber").value(hasItem(DEFAULT_COMPANY_REG_NUMBER)));
+
+        // Check, that the count call also returns 1
+        restCompanyMockMvc.perform(get("/api/companies/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultCompanyShouldNotBeFound(String filter) throws Exception {
+        restCompanyMockMvc.perform(get("/api/companies?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restCompanyMockMvc.perform(get("/api/companies/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingCompany() throws Exception {
         // Get the company
         restCompanyMockMvc.perform(get("/api/companies/{id}", Long.MAX_VALUE))
@@ -246,7 +525,7 @@ public class CompanyResourceIT {
     @Transactional
     public void updateCompany() throws Exception {
         // Initialize the database
-        companyRepository.saveAndFlush(company);
+        companyService.save(company);
 
         int databaseSizeBeforeUpdate = companyRepository.findAll().size();
 
@@ -295,7 +574,7 @@ public class CompanyResourceIT {
     @Transactional
     public void deleteCompany() throws Exception {
         // Initialize the database
-        companyRepository.saveAndFlush(company);
+        companyService.save(company);
 
         int databaseSizeBeforeDelete = companyRepository.findAll().size();
 

@@ -14,7 +14,7 @@ import java.util.Optional;
  * Spring Data  repository for the ExUser entity.
  */
 @Repository
-public interface ExUserRepository extends JpaRepository<ExUser, Long> {
+public interface ExUserRepository extends JpaRepository<ExUser, Long>, JpaSpecificationExecutor<ExUser> {
 
     @Query(value = "select distinct exUser from ExUser exUser left join fetch exUser.locations",
         countQuery = "select count(distinct exUser) from ExUser exUser")
@@ -27,5 +27,4 @@ public interface ExUserRepository extends JpaRepository<ExUser, Long> {
     Optional<ExUser> findOneWithEagerRelationships(@Param("id") Long id);
 
     Optional<ExUser> findOneByRelatedUser(User user);
-
 }

@@ -3,7 +3,10 @@ package com.alphadevs.pos.web.rest;
 import com.alphadevs.pos.PoSv2App;
 import com.alphadevs.pos.domain.DocumentType;
 import com.alphadevs.pos.repository.DocumentTypeRepository;
+import com.alphadevs.pos.service.DocumentTypeService;
 import com.alphadevs.pos.web.rest.errors.ExceptionTranslator;
+import com.alphadevs.pos.service.dto.DocumentTypeCriteria;
+import com.alphadevs.pos.service.DocumentTypeQueryService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,12 @@ public class DocumentTypeResourceIT {
     private DocumentTypeRepository documentTypeRepository;
 
     @Autowired
+    private DocumentTypeService documentTypeService;
+
+    @Autowired
+    private DocumentTypeQueryService documentTypeQueryService;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -64,7 +73,7 @@ public class DocumentTypeResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final DocumentTypeResource documentTypeResource = new DocumentTypeResource(documentTypeRepository);
+        final DocumentTypeResource documentTypeResource = new DocumentTypeResource(documentTypeService, documentTypeQueryService);
         this.restDocumentTypeMockMvc = MockMvcBuilders.standaloneSetup(documentTypeResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -210,6 +219,197 @@ public class DocumentTypeResourceIT {
 
     @Test
     @Transactional
+    public void getAllDocumentTypesByDocumentTypeCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentTypeCode equals to DEFAULT_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldBeFound("documentTypeCode.equals=" + DEFAULT_DOCUMENT_TYPE_CODE);
+
+        // Get all the documentTypeList where documentTypeCode equals to UPDATED_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldNotBeFound("documentTypeCode.equals=" + UPDATED_DOCUMENT_TYPE_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeCodeIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentTypeCode not equals to DEFAULT_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldNotBeFound("documentTypeCode.notEquals=" + DEFAULT_DOCUMENT_TYPE_CODE);
+
+        // Get all the documentTypeList where documentTypeCode not equals to UPDATED_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldBeFound("documentTypeCode.notEquals=" + UPDATED_DOCUMENT_TYPE_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentTypeCode in DEFAULT_DOCUMENT_TYPE_CODE or UPDATED_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldBeFound("documentTypeCode.in=" + DEFAULT_DOCUMENT_TYPE_CODE + "," + UPDATED_DOCUMENT_TYPE_CODE);
+
+        // Get all the documentTypeList where documentTypeCode equals to UPDATED_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldNotBeFound("documentTypeCode.in=" + UPDATED_DOCUMENT_TYPE_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentTypeCode is not null
+        defaultDocumentTypeShouldBeFound("documentTypeCode.specified=true");
+
+        // Get all the documentTypeList where documentTypeCode is null
+        defaultDocumentTypeShouldNotBeFound("documentTypeCode.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeCodeContainsSomething() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentTypeCode contains DEFAULT_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldBeFound("documentTypeCode.contains=" + DEFAULT_DOCUMENT_TYPE_CODE);
+
+        // Get all the documentTypeList where documentTypeCode contains UPDATED_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldNotBeFound("documentTypeCode.contains=" + UPDATED_DOCUMENT_TYPE_CODE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeCodeNotContainsSomething() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentTypeCode does not contain DEFAULT_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldNotBeFound("documentTypeCode.doesNotContain=" + DEFAULT_DOCUMENT_TYPE_CODE);
+
+        // Get all the documentTypeList where documentTypeCode does not contain UPDATED_DOCUMENT_TYPE_CODE
+        defaultDocumentTypeShouldBeFound("documentTypeCode.doesNotContain=" + UPDATED_DOCUMENT_TYPE_CODE);
+    }
+
+
+    @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentType equals to DEFAULT_DOCUMENT_TYPE
+        defaultDocumentTypeShouldBeFound("documentType.equals=" + DEFAULT_DOCUMENT_TYPE);
+
+        // Get all the documentTypeList where documentType equals to UPDATED_DOCUMENT_TYPE
+        defaultDocumentTypeShouldNotBeFound("documentType.equals=" + UPDATED_DOCUMENT_TYPE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeIsNotEqualToSomething() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentType not equals to DEFAULT_DOCUMENT_TYPE
+        defaultDocumentTypeShouldNotBeFound("documentType.notEquals=" + DEFAULT_DOCUMENT_TYPE);
+
+        // Get all the documentTypeList where documentType not equals to UPDATED_DOCUMENT_TYPE
+        defaultDocumentTypeShouldBeFound("documentType.notEquals=" + UPDATED_DOCUMENT_TYPE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeIsInShouldWork() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentType in DEFAULT_DOCUMENT_TYPE or UPDATED_DOCUMENT_TYPE
+        defaultDocumentTypeShouldBeFound("documentType.in=" + DEFAULT_DOCUMENT_TYPE + "," + UPDATED_DOCUMENT_TYPE);
+
+        // Get all the documentTypeList where documentType equals to UPDATED_DOCUMENT_TYPE
+        defaultDocumentTypeShouldNotBeFound("documentType.in=" + UPDATED_DOCUMENT_TYPE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentType is not null
+        defaultDocumentTypeShouldBeFound("documentType.specified=true");
+
+        // Get all the documentTypeList where documentType is null
+        defaultDocumentTypeShouldNotBeFound("documentType.specified=false");
+    }
+                @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeContainsSomething() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentType contains DEFAULT_DOCUMENT_TYPE
+        defaultDocumentTypeShouldBeFound("documentType.contains=" + DEFAULT_DOCUMENT_TYPE);
+
+        // Get all the documentTypeList where documentType contains UPDATED_DOCUMENT_TYPE
+        defaultDocumentTypeShouldNotBeFound("documentType.contains=" + UPDATED_DOCUMENT_TYPE);
+    }
+
+    @Test
+    @Transactional
+    public void getAllDocumentTypesByDocumentTypeNotContainsSomething() throws Exception {
+        // Initialize the database
+        documentTypeRepository.saveAndFlush(documentType);
+
+        // Get all the documentTypeList where documentType does not contain DEFAULT_DOCUMENT_TYPE
+        defaultDocumentTypeShouldNotBeFound("documentType.doesNotContain=" + DEFAULT_DOCUMENT_TYPE);
+
+        // Get all the documentTypeList where documentType does not contain UPDATED_DOCUMENT_TYPE
+        defaultDocumentTypeShouldBeFound("documentType.doesNotContain=" + UPDATED_DOCUMENT_TYPE);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultDocumentTypeShouldBeFound(String filter) throws Exception {
+        restDocumentTypeMockMvc.perform(get("/api/document-types?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(documentType.getId().intValue())))
+            .andExpect(jsonPath("$.[*].documentTypeCode").value(hasItem(DEFAULT_DOCUMENT_TYPE_CODE)))
+            .andExpect(jsonPath("$.[*].documentType").value(hasItem(DEFAULT_DOCUMENT_TYPE)));
+
+        // Check, that the count call also returns 1
+        restDocumentTypeMockMvc.perform(get("/api/document-types/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultDocumentTypeShouldNotBeFound(String filter) throws Exception {
+        restDocumentTypeMockMvc.perform(get("/api/document-types?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restDocumentTypeMockMvc.perform(get("/api/document-types/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
+    @Transactional
     public void getNonExistingDocumentType() throws Exception {
         // Get the documentType
         restDocumentTypeMockMvc.perform(get("/api/document-types/{id}", Long.MAX_VALUE))
@@ -220,7 +420,7 @@ public class DocumentTypeResourceIT {
     @Transactional
     public void updateDocumentType() throws Exception {
         // Initialize the database
-        documentTypeRepository.saveAndFlush(documentType);
+        documentTypeService.save(documentType);
 
         int databaseSizeBeforeUpdate = documentTypeRepository.findAll().size();
 
@@ -267,7 +467,7 @@ public class DocumentTypeResourceIT {
     @Transactional
     public void deleteDocumentType() throws Exception {
         // Initialize the database
-        documentTypeRepository.saveAndFlush(documentType);
+        documentTypeService.save(documentType);
 
         int databaseSizeBeforeDelete = documentTypeRepository.findAll().size();
 

@@ -40,7 +40,7 @@
                 <dt><span>Customer</span></dt>
                 <dd>
                     <div *ngIf="customerAccount.customer">
-                        <a [routerLink]="['/customer', customerAccount.customer?.id, 'view']">{{customerAccount.customer?.id}}</a>
+                        <a [routerLink]="['/customer', customerAccount.customer?.id, 'view']">{{customerAccount.customer?.customerCode}}</a>
                     </div>
                 </dd>
             </dl>

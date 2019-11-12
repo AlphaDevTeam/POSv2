@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.PurchaseAccountBalance;
-import com.alphadevs.pos.repository.PurchaseAccountBalanceRepository;
+import com.alphadevs.pos.service.PurchaseAccountBalanceService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.PurchaseAccountBalanceCriteria;
+import com.alphadevs.pos.service.PurchaseAccountBalanceQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class PurchaseAccountBalanceResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final PurchaseAccountBalanceRepository purchaseAccountBalanceRepository;
+    private final PurchaseAccountBalanceService purchaseAccountBalanceService;
 
-    public PurchaseAccountBalanceResource(PurchaseAccountBalanceRepository purchaseAccountBalanceRepository) {
-        this.purchaseAccountBalanceRepository = purchaseAccountBalanceRepository;
+    private final PurchaseAccountBalanceQueryService purchaseAccountBalanceQueryService;
+
+    public PurchaseAccountBalanceResource(PurchaseAccountBalanceService purchaseAccountBalanceService, PurchaseAccountBalanceQueryService purchaseAccountBalanceQueryService) {
+        this.purchaseAccountBalanceService = purchaseAccountBalanceService;
+        this.purchaseAccountBalanceQueryService = purchaseAccountBalanceQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class PurchaseAccountBalanceResource {
         if (purchaseAccountBalance.getId() != null) {
             throw new BadRequestAlertException("A new purchaseAccountBalance cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        PurchaseAccountBalance result = purchaseAccountBalanceRepository.save(purchaseAccountBalance);
+        PurchaseAccountBalance result = purchaseAccountBalanceService.save(purchaseAccountBalance);
         return ResponseEntity.created(new URI("/api/purchase-account-balances/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class PurchaseAccountBalanceResource {
         if (purchaseAccountBalance.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        PurchaseAccountBalance result = purchaseAccountBalanceRepository.save(purchaseAccountBalance);
+        PurchaseAccountBalance result = purchaseAccountBalanceService.save(purchaseAccountBalance);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, purchaseAccountBalance.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class PurchaseAccountBalanceResource {
      * {@code GET  /purchase-account-balances} : get all the purchaseAccountBalances.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of purchaseAccountBalances in body.
      */
     @GetMapping("/purchase-account-balances")
-    public List<PurchaseAccountBalance> getAllPurchaseAccountBalances() {
-        log.debug("REST request to get all PurchaseAccountBalances");
-        return purchaseAccountBalanceRepository.findAll();
+    public ResponseEntity<List<PurchaseAccountBalance>> getAllPurchaseAccountBalances(PurchaseAccountBalanceCriteria criteria) {
+        log.debug("REST request to get PurchaseAccountBalances by criteria: {}", criteria);
+        List<PurchaseAccountBalance> entityList = purchaseAccountBalanceQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /purchase-account-balances/count} : count all the purchaseAccountBalances.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/purchase-account-balances/count")
+    public ResponseEntity<Long> countPurchaseAccountBalances(PurchaseAccountBalanceCriteria criteria) {
+        log.debug("REST request to count PurchaseAccountBalances by criteria: {}", criteria);
+        return ResponseEntity.ok().body(purchaseAccountBalanceQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class PurchaseAccountBalanceResource {
     @GetMapping("/purchase-account-balances/{id}")
     public ResponseEntity<PurchaseAccountBalance> getPurchaseAccountBalance(@PathVariable Long id) {
         log.debug("REST request to get PurchaseAccountBalance : {}", id);
-        Optional<PurchaseAccountBalance> purchaseAccountBalance = purchaseAccountBalanceRepository.findById(id);
+        Optional<PurchaseAccountBalance> purchaseAccountBalance = purchaseAccountBalanceService.findOne(id);
         return ResponseUtil.wrapOrNotFound(purchaseAccountBalance);
     }
 
@@ -113,7 +132,7 @@ public class PurchaseAccountBalanceResource {
     @DeleteMapping("/purchase-account-balances/{id}")
     public ResponseEntity<Void> deletePurchaseAccountBalance(@PathVariable Long id) {
         log.debug("REST request to delete PurchaseAccountBalance : {}", id);
-        purchaseAccountBalanceRepository.deleteById(id);
+        purchaseAccountBalanceService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

@@ -12,7 +12,7 @@
                                  baseTableName="items"
                                  constraintName="fk_items_related_design_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="desings"/>
+                                 referencedTableName="designs"/>
 
         <addForeignKeyConstraint baseColumnNames="related_product_id"
                                  baseTableName="items"

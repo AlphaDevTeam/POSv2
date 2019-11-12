@@ -1,11 +1,11 @@
 id;transaction_date;transaction_description;transaction_amount_dr;transaction_amount_cr;transaction_balance
-1;2019-11-09;connecting;11063;37882;84645
-2;2019-11-09;Investment Account;50228;79729;53986
-3;2019-11-09;Intuitive application;72003;1220;64114
-4;2019-11-09;Nevada port Money Market Account;82679;18159;95907
-5;2019-11-08;Idaho strategize;46200;28792;94728
-6;2019-11-09;Customer;13911;50588;10079
-7;2019-11-09;Clothing;87212;59296;93211
-8;2019-11-09;International solid state;2302;70723;65136
-9;2019-11-09;Maine Checking Account markets;73644;10424;93436
-10;2019-11-08;District Wooden Visionary;16552;83889;18632
+1;2019-11-12;connecting;11063;37882;84645
+2;2019-11-12;Investment Account;50228;79729;53986
+3;2019-11-12;Intuitive application;72003;1220;64114
+4;2019-11-12;Nevada port Money Market Account;82679;18159;95907
+5;2019-11-11;Idaho strategize;46200;28792;94728
+6;2019-11-12;Customer;13911;50588;10079
+7;2019-11-12;Clothing;87212;59296;93211
+8;2019-11-12;International solid state;2302;70723;65136
+9;2019-11-12;Maine Checking Account markets;73644;10424;93436
+10;2019-11-11;District Wooden Visionary;16552;83889;18632

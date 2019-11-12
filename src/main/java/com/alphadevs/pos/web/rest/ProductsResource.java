@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.Products;
-import com.alphadevs.pos.repository.ProductsRepository;
+import com.alphadevs.pos.service.ProductsService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.ProductsCriteria;
+import com.alphadevs.pos.service.ProductsQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class ProductsResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final ProductsRepository productsRepository;
+    private final ProductsService productsService;
 
-    public ProductsResource(ProductsRepository productsRepository) {
-        this.productsRepository = productsRepository;
+    private final ProductsQueryService productsQueryService;
+
+    public ProductsResource(ProductsService productsService, ProductsQueryService productsQueryService) {
+        this.productsService = productsService;
+        this.productsQueryService = productsQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class ProductsResource {
         if (products.getId() != null) {
             throw new BadRequestAlertException("A new products cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Products result = productsRepository.save(products);
+        Products result = productsService.save(products);
         return ResponseEntity.created(new URI("/api/products/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class ProductsResource {
         if (products.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Products result = productsRepository.save(products);
+        Products result = productsService.save(products);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, products.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class ProductsResource {
      * {@code GET  /products} : get all the products.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of products in body.
      */
     @GetMapping("/products")
-    public List<Products> getAllProducts() {
-        log.debug("REST request to get all Products");
-        return productsRepository.findAll();
+    public ResponseEntity<List<Products>> getAllProducts(ProductsCriteria criteria) {
+        log.debug("REST request to get Products by criteria: {}", criteria);
+        List<Products> entityList = productsQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /products/count} : count all the products.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/products/count")
+    public ResponseEntity<Long> countProducts(ProductsCriteria criteria) {
+        log.debug("REST request to count Products by criteria: {}", criteria);
+        return ResponseEntity.ok().body(productsQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class ProductsResource {
     @GetMapping("/products/{id}")
     public ResponseEntity<Products> getProducts(@PathVariable Long id) {
         log.debug("REST request to get Products : {}", id);
-        Optional<Products> products = productsRepository.findById(id);
+        Optional<Products> products = productsService.findOne(id);
         return ResponseUtil.wrapOrNotFound(products);
     }
 
@@ -113,7 +132,7 @@ public class ProductsResource {
     @DeleteMapping("/products/{id}")
     public ResponseEntity<Void> deleteProducts(@PathVariable Long id) {
         log.debug("REST request to delete Products : {}", id);
-        productsRepository.deleteById(id);
+        productsService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

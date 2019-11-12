@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.SupplierAccountBalance;
-import com.alphadevs.pos.repository.SupplierAccountBalanceRepository;
+import com.alphadevs.pos.service.SupplierAccountBalanceService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.SupplierAccountBalanceCriteria;
+import com.alphadevs.pos.service.SupplierAccountBalanceQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class SupplierAccountBalanceResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final SupplierAccountBalanceRepository supplierAccountBalanceRepository;
+    private final SupplierAccountBalanceService supplierAccountBalanceService;
 
-    public SupplierAccountBalanceResource(SupplierAccountBalanceRepository supplierAccountBalanceRepository) {
-        this.supplierAccountBalanceRepository = supplierAccountBalanceRepository;
+    private final SupplierAccountBalanceQueryService supplierAccountBalanceQueryService;
+
+    public SupplierAccountBalanceResource(SupplierAccountBalanceService supplierAccountBalanceService, SupplierAccountBalanceQueryService supplierAccountBalanceQueryService) {
+        this.supplierAccountBalanceService = supplierAccountBalanceService;
+        this.supplierAccountBalanceQueryService = supplierAccountBalanceQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class SupplierAccountBalanceResource {
         if (supplierAccountBalance.getId() != null) {
             throw new BadRequestAlertException("A new supplierAccountBalance cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        SupplierAccountBalance result = supplierAccountBalanceRepository.save(supplierAccountBalance);
+        SupplierAccountBalance result = supplierAccountBalanceService.save(supplierAccountBalance);
         return ResponseEntity.created(new URI("/api/supplier-account-balances/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class SupplierAccountBalanceResource {
         if (supplierAccountBalance.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        SupplierAccountBalance result = supplierAccountBalanceRepository.save(supplierAccountBalance);
+        SupplierAccountBalance result = supplierAccountBalanceService.save(supplierAccountBalance);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, supplierAccountBalance.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class SupplierAccountBalanceResource {
      * {@code GET  /supplier-account-balances} : get all the supplierAccountBalances.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of supplierAccountBalances in body.
      */
     @GetMapping("/supplier-account-balances")
-    public List<SupplierAccountBalance> getAllSupplierAccountBalances() {
-        log.debug("REST request to get all SupplierAccountBalances");
-        return supplierAccountBalanceRepository.findAll();
+    public ResponseEntity<List<SupplierAccountBalance>> getAllSupplierAccountBalances(SupplierAccountBalanceCriteria criteria) {
+        log.debug("REST request to get SupplierAccountBalances by criteria: {}", criteria);
+        List<SupplierAccountBalance> entityList = supplierAccountBalanceQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /supplier-account-balances/count} : count all the supplierAccountBalances.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/supplier-account-balances/count")
+    public ResponseEntity<Long> countSupplierAccountBalances(SupplierAccountBalanceCriteria criteria) {
+        log.debug("REST request to count SupplierAccountBalances by criteria: {}", criteria);
+        return ResponseEntity.ok().body(supplierAccountBalanceQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class SupplierAccountBalanceResource {
     @GetMapping("/supplier-account-balances/{id}")
     public ResponseEntity<SupplierAccountBalance> getSupplierAccountBalance(@PathVariable Long id) {
         log.debug("REST request to get SupplierAccountBalance : {}", id);
-        Optional<SupplierAccountBalance> supplierAccountBalance = supplierAccountBalanceRepository.findById(id);
+        Optional<SupplierAccountBalance> supplierAccountBalance = supplierAccountBalanceService.findOne(id);
         return ResponseUtil.wrapOrNotFound(supplierAccountBalance);
     }
 
@@ -113,7 +132,7 @@ public class SupplierAccountBalanceResource {
     @DeleteMapping("/supplier-account-balances/{id}")
     public ResponseEntity<Void> deleteSupplierAccountBalance(@PathVariable Long id) {
         log.debug("REST request to delete SupplierAccountBalance : {}", id);
-        supplierAccountBalanceRepository.deleteById(id);
+        supplierAccountBalanceService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

@@ -1,8 +1,10 @@
 package com.alphadevs.pos.web.rest;
 
 import com.alphadevs.pos.domain.Company;
-import com.alphadevs.pos.repository.CompanyRepository;
+import com.alphadevs.pos.service.CompanyService;
 import com.alphadevs.pos.web.rest.errors.BadRequestAlertException;
+import com.alphadevs.pos.service.dto.CompanyCriteria;
+import com.alphadevs.pos.service.CompanyQueryService;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -33,10 +35,13 @@ public class CompanyResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final CompanyRepository companyRepository;
+    private final CompanyService companyService;
 
-    public CompanyResource(CompanyRepository companyRepository) {
-        this.companyRepository = companyRepository;
+    private final CompanyQueryService companyQueryService;
+
+    public CompanyResource(CompanyService companyService, CompanyQueryService companyQueryService) {
+        this.companyService = companyService;
+        this.companyQueryService = companyQueryService;
     }
 
     /**
@@ -52,7 +57,7 @@ public class CompanyResource {
         if (company.getId() != null) {
             throw new BadRequestAlertException("A new company cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Company result = companyRepository.save(company);
+        Company result = companyService.save(company);
         return ResponseEntity.created(new URI("/api/companies/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -73,7 +78,7 @@ public class CompanyResource {
         if (company.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Company result = companyRepository.save(company);
+        Company result = companyService.save(company);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, company.getId().toString()))
             .body(result);
@@ -83,12 +88,26 @@ public class CompanyResource {
      * {@code GET  /companies} : get all the companies.
      *
 
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of companies in body.
      */
     @GetMapping("/companies")
-    public List<Company> getAllCompanies() {
-        log.debug("REST request to get all Companies");
-        return companyRepository.findAll();
+    public ResponseEntity<List<Company>> getAllCompanies(CompanyCriteria criteria) {
+        log.debug("REST request to get Companies by criteria: {}", criteria);
+        List<Company> entityList = companyQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+    * {@code GET  /companies/count} : count all the companies.
+    *
+    * @param criteria the criteria which the requested entities should match.
+    * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+    */
+    @GetMapping("/companies/count")
+    public ResponseEntity<Long> countCompanies(CompanyCriteria criteria) {
+        log.debug("REST request to count Companies by criteria: {}", criteria);
+        return ResponseEntity.ok().body(companyQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -100,7 +119,7 @@ public class CompanyResource {
     @GetMapping("/companies/{id}")
     public ResponseEntity<Company> getCompany(@PathVariable Long id) {
         log.debug("REST request to get Company : {}", id);
-        Optional<Company> company = companyRepository.findById(id);
+        Optional<Company> company = companyService.findOne(id);
         return ResponseUtil.wrapOrNotFound(company);
     }
 
@@ -113,7 +132,7 @@ public class CompanyResource {
     @DeleteMapping("/companies/{id}")
     public ResponseEntity<Void> deleteCompany(@PathVariable Long id) {
         log.debug("REST request to delete Company : {}", id);
-        companyRepository.deleteById(id);
+        companyService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
     }
 }

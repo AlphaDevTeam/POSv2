@@ -12,8 +12,7 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface LocationRepository extends JpaRepository<Location, Long> {
+public interface LocationRepository extends JpaRepository<Location, Long>, JpaSpecificationExecutor<Location> {
 
-    List<Location> findAllByUsers(ExUser user);
-
+    List<Location> findAllByUsers(ExUser exUser);
 }

@@ -42,12 +42,6 @@ public class ExUser implements Serializable {
                inverseJoinColumns = @JoinColumn(name = "locations_id", referencedColumnName = "id"))
     private Set<Location> locations = new HashSet<>();
 
-    public ExUser() {
-    }
-
-    public ExUser(ExUser exUser) {
-    }
-
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
         return id;

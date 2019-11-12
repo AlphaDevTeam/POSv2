@@ -30,7 +30,7 @@
                 <td>{{customerAccountBalance.balance}}</td>
                 <td>
                     <div *ngIf="customerAccountBalance.location">
-                        <a [routerLink]="['/location', customerAccountBalance.location?.id, 'view' ]" >{{customerAccountBalance.location?.id}}</a>
+                        <a [routerLink]="['/location', customerAccountBalance.location?.id, 'view' ]" >{{customerAccountBalance.location?.locationCode}}</a>
                     </div>
                 </td>
                 <td class="text-right">
