@@ -1,15 +1,15 @@
 <div class="row justify-content-center">
-    <div class="col-8">
+    <div class="col-10">
         <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-            <h2 id="jhi-goods-receipt-heading">Create or edit a Goods Receipt</h2>
-            <div>
+            <h2 id="jhi-goods-receipt-heading">Create a Goods Receipt</h2>
+            <div class="row">
                 <jhi-alert-error></jhi-alert-error>
-                <div class="form-group" [hidden]="!editForm.get('id').value">
+                <div class="col-4" [hidden]="!editForm.get('id').value">
                     <label for="id">ID</label>
                     <input type="text" class="form-control" id="id" name="id" formControlName="id"
                         readonly />
                 </div>
-                <div class="form-group">
+                <div class="col-4">
                     <label class="form-control-label" for="field_grnNumber">Grn Number</label>
                     <input type="text" class="form-control" name="grnNumber" id="field_grnNumber"
                            formControlName="grnNumber"/>
@@ -20,7 +20,7 @@
                         </small>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="col-4">
                     <label class="form-control-label" for="field_grnDate">Grn Date</label>
                     <div class="input-group">
                         <input id="field_grnDate" type="text" class="form-control" name="grnDate" ngbDatepicker  #grnDateDp="ngbDatepicker" formControlName="grnDate"/>
@@ -35,35 +35,121 @@
                         </small>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="col-4">
                     <label class="form-control-label" for="field_poNumber">Po Number</label>
                     <input type="text" class="form-control" name="poNumber" id="field_poNumber"
                            formControlName="poNumber"/>
                 </div>
 
-                <div class="form-group">
+                <div class="col-4">
                     <label class="form-control-label" for="field_supplier">Supplier</label>
                     <select class="form-control" id="field_supplier" name="supplier" formControlName="supplier">
                         <option [ngValue]="null"></option>
                         <option [ngValue]="supplierOption.id === editForm.get('supplier').value?.id ? editForm.get('supplier').value : supplierOption" *ngFor="let supplierOption of suppliers; trackBy: trackSupplierById">{{supplierOption.supplierCode}}</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="col-4">
                     <label class="form-control-label" for="field_location">Location</label>
                     <select class="form-control" id="field_location" name="location" formControlName="location">
                         <option [ngValue]="null"></option>
                         <option [ngValue]="locationOption.id === editForm.get('location').value?.id ? editForm.get('location').value : locationOption" *ngFor="let locationOption of locations; trackBy: trackLocationById">{{locationOption.locationCode}}</option>
                     </select>
                 </div>
+
+                <div class="col-4">
+                    <label class="form-control-label" for="field_grnQty">Qty</label>
+                    <input type="text" class="form-control" name="grnQty" id="field_grnQty"
+                           formControlName="grnQty"/>
+                    <div *ngIf="editForm.get('grnQty').invalid && (editForm.get('grnQty').dirty || editForm.get('grnQty').touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('grnQty').errors.required">
+                            This field is required.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <label class="form-control-label" for="field_item">Item</label>
+                    <select class="form-control" id="field_item" name="item" formControlName="item" (change)="updateItem(editForm.get('item').value)">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="itemsOption.id === editForm.get('item').value?.id ? editForm.get('item').value : itemsOption" *ngFor="let itemsOption of items; trackBy: trackItemsById">{{itemsOption.itemCode}}</option>
+                    </select>
+                </div>
+
+                <div class="col-4">
+                    <label class="form-control-label" for="field_grnItemCost">Item Cost</label>
+                    <input ngDefaultControl *ngIf="editForm.get('item').value?.id"  type="text" class="form-control" name="itemCost" id="field_grnItemCost" formControlName="itemCost">
+                </div>
+
+                <div class="col-4">
+                    <label class="form-control-label" for="field_grnItemCost">Item Cost - Test </label>
+                    <input ngDefaultControl *ngIf="editForm.get('item').value?.itemCost"  type="text" class="form-control" name="editForm.get('item').value?.itemCost" id="field_grnItemCost1" formControlName="editForm.get('item').value?.itemCost">
+                </div>
+
+                <div class="col-4">
+                    <label class="form-control-label" ></label>
+                    <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                        <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Cancel</span>
+                    </button>
+                    <button type="button" id="add" class="btn btn-secondary" [disabled]="editForm.invalid || isSaving" class="btn btn-primary" (click)="addItem()">
+                        <fa-icon [icon]="'plus-circle'"></fa-icon>&nbsp;<span>Add</span>
+                    </button>
+                    <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                        <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span>Save</span>
+                    </button>
+                </div>
             </div>
-            <div>
-                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
-                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Cancel</span>
-                </button>
-                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
-                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span>Save</span>
-                </button>
+            <hr/>
+            <div class="table-responsive" *ngIf="virtualGoodsReceipts?.length > 0">
+                <table class="table table-striped" aria-describedby="page-heading">
+                    <thead>
+                    <tr>
+                        <th scope="col" ><span>ID</span></th>
+                        <th scope="col" ><span>Grn Qty</span></th>
+                        <th scope="col" ><span>Item</span></th>
+                        <th scope="col" ><span>Original Item Cost</span></th>
+                        <th scope="col" ><span>Item Cost</span></th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let goodsReceiptDetails of virtualGoodsReceipts ;trackBy: trackId; let id = index">
+                        <td>{{id}}</td>
+                        <td>
+                            <div *ngIf="goodsReceiptDetails.item">
+                                <span contenteditable="true" (keyup)="changeValue(id, 'grnQty', $event)" (blur)="updateList(id, 'grnQty', $event)">{{goodsReceiptDetails.grnQty}}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div *ngIf="goodsReceiptDetails.item">
+                                {{goodsReceiptDetails.item?.itemCode}}
+                            </div>
+                        </td>
+                        <td>
+                            <div *ngIf="goodsReceiptDetails.item">
+                                {{goodsReceiptDetails.item?.itemCost}}
+                            </div>
+                        </td>
+                        <td>
+                            <div *ngIf="editFieldCost">
+                                {{editFieldCost}}
+                            </div>
+                        </td>
+
+                        <td class="text-right">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-danger btn-sm"  (click)="removeItem(id)">
+                                    <fa-icon [icon]="'times'"></fa-icon>
+                                    <span class="d-none d-md-inline">Delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
+
+
         </form>
     </div>
 </div>

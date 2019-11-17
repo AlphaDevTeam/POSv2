@@ -15,6 +15,11 @@ import { SupplierService } from 'app/entities/supplier/supplier.service';
 import { ILocation } from 'app/shared/model/location.model';
 import { LocationService } from 'app/entities/location/location.service';
 
+import { IGoodsReceiptDetails, GoodsReceiptDetails } from 'app/shared/model/goods-receipt-details.model';
+import { GoodsReceiptDetailsService } from '../goods-receipt-details/goods-receipt-details.service';
+import { IItems } from 'app/shared/model/items.model';
+import { ItemsService } from 'app/entities/items/items.service';
+
 @Component({
   selector: 'jhi-goods-receipt-update',
   templateUrl: './goods-receipt-update.component.html'
@@ -26,6 +31,15 @@ export class GoodsReceiptUpdateComponent implements OnInit {
 
   locations: ILocation[];
   grnDateDp: any;
+  debug: any;
+  // Details Items
+  editFieldQty: number;
+  editFieldCost: number;
+  items: IItems[];
+  originalitems: IItems[];
+  goodsreceipts: IGoodsReceipt[];
+  grnList: IGoodsReceipt[];
+  virtualGoodsReceipts: IGoodsReceipt[];
 
   editForm = this.fb.group({
     id: [],
@@ -33,14 +47,22 @@ export class GoodsReceiptUpdateComponent implements OnInit {
     grnDate: [null, [Validators.required]],
     poNumber: [],
     supplier: [],
-    location: []
+    location: [],
+    grnQty: [null, [Validators.required]],
+    item: [],
+    grn: [],
+    itemCost: []
   });
+
+  editFormDetails = this.fb.group({});
 
   constructor(
     protected jhiAlertService: JhiAlertService,
     protected goodsReceiptService: GoodsReceiptService,
     protected supplierService: SupplierService,
     protected locationService: LocationService,
+    protected goodsReceiptDetailsService: GoodsReceiptDetailsService,
+    protected itemsService: ItemsService,
     protected activatedRoute: ActivatedRoute,
     private fb: FormBuilder
   ) {}
@@ -64,6 +86,31 @@ export class GoodsReceiptUpdateComponent implements OnInit {
         map((response: HttpResponse<ILocation[]>) => response.body)
       )
       .subscribe((res: ILocation[]) => (this.locations = res), (res: HttpErrorResponse) => this.onError(res.message));
+
+    // Details related
+    this.grnList = [];
+
+    this.activatedRoute.data.subscribe(({ goodsReceiptDetails }) => {
+      this.updateFormDetails(goodsReceiptDetails);
+    });
+    this.itemsService
+      .query()
+      .pipe(
+        filter((mayBeOk: HttpResponse<IItems[]>) => mayBeOk.ok),
+        map((response: HttpResponse<IItems[]>) => response.body)
+      )
+      .subscribe((res: IItems[]) => (this.items = res), (res: HttpErrorResponse) => this.onError(res.message));
+
+    this.originalitems = this.items;
+  }
+
+  updateFormDetails(goodsReceiptDetails: IGoodsReceiptDetails) {
+    this.editForm.patchValue({
+      id: goodsReceiptDetails.id,
+      grnQty: goodsReceiptDetails.grnQty,
+      item: goodsReceiptDetails.item,
+      grn: goodsReceiptDetails.grn
+    });
   }
 
   updateForm(goodsReceipt: IGoodsReceipt) {
@@ -103,6 +150,46 @@ export class GoodsReceiptUpdateComponent implements OnInit {
     };
   }
 
+  private createFromFormDetails(): IGoodsReceiptDetails {
+    return {
+      ...new GoodsReceiptDetails(),
+      // id: this.editForm.get(['id']).value,
+      grnQty: this.editForm.get(['grnQty']).value,
+      item: this.editForm.get(['item']).value,
+      grn: this.createFromForm()
+    };
+  }
+
+  addItem() {
+    const goodsReceiptDetails = this.createFromFormDetails();
+    //goodsReceiptDetails.item.itemCost = this.editForm.get(['itemCost']).value;
+    this.editFieldCost = this.editForm.get(['itemCost']).value;
+    this.grnList.push(goodsReceiptDetails);
+    this.virtualGoodsReceipts = this.grnList;
+  }
+
+  updateList(id: number, property: string, event: any) {
+    const editFieldQty = event.target.textContent;
+    this.virtualGoodsReceipts[id][property] = editFieldQty;
+  }
+
+  changeValue(id: number, property: string, event: any) {
+    this.editFieldQty = event.target.textContent;
+  }
+
+  removeItem(id: number) {
+    this.grnList.splice(id, 1);
+    this.virtualGoodsReceipts = this.grnList;
+  }
+
+  updateItem(item: IItems) {
+    this.editForm.patchValue({
+      itemCost: item.itemCost
+    });
+    this.editFieldCost = item.itemCost;
+    this.debug = 'updated' + item.itemCost;
+  }
+
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IGoodsReceipt>>) {
     result.subscribe(() => this.onSaveSuccess(), () => this.onSaveError());
   }
@@ -124,6 +211,10 @@ export class GoodsReceiptUpdateComponent implements OnInit {
   }
 
   trackLocationById(index: number, item: ILocation) {
+    return item.id;
+  }
+
+  trackGoodsReceiptById(index: number, item: IGoodsReceipt) {
     return item.id;
   }
 }

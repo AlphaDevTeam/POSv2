@@ -22,8 +22,10 @@ export class GoodsReceiptDetailsUpdateComponent implements OnInit {
   isSaving: boolean;
 
   items: IItems[];
-
+  editField: number;
   goodsreceipts: IGoodsReceipt[];
+  grnList: IGoodsReceipt[];
+  virtualGoodsReceipts: IGoodsReceipt[];
 
   editForm = this.fb.group({
     id: [],
@@ -43,6 +45,8 @@ export class GoodsReceiptDetailsUpdateComponent implements OnInit {
 
   ngOnInit() {
     this.isSaving = false;
+    this.grnList = [];
+
     this.activatedRoute.data.subscribe(({ goodsReceiptDetails }) => {
       this.updateForm(goodsReceiptDetails);
     });
@@ -75,13 +79,28 @@ export class GoodsReceiptDetailsUpdateComponent implements OnInit {
     window.history.back();
   }
 
+  addItem() {
+    const goodsReceiptDetails = this.createFromForm();
+    this.grnList.push(goodsReceiptDetails);
+    this.virtualGoodsReceipts = this.grnList;
+  }
+
+  updateList(id: number, property: string, event: any) {
+    const editField = event.target.textContent;
+    this.virtualGoodsReceipts[id][property] = editField;
+  }
+
+  changeValue(id: number, property: string, event: any) {
+    this.editField = event.target.textContent;
+  }
+
   save() {
     this.isSaving = true;
     const goodsReceiptDetails = this.createFromForm();
     if (goodsReceiptDetails.id !== undefined) {
       this.subscribeToSaveResponse(this.goodsReceiptDetailsService.update(goodsReceiptDetails));
     } else {
-      this.subscribeToSaveResponse(this.goodsReceiptDetailsService.create(goodsReceiptDetails));
+      this.subscribeToSaveResponse(this.goodsReceiptDetailsService.createMulti(this.virtualGoodsReceipts));
     }
   }
 

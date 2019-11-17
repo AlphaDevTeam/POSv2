@@ -52,15 +52,17 @@ public class GoodsReceiptDetailsResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/goods-receipt-details")
-    public ResponseEntity<GoodsReceiptDetails> createGoodsReceiptDetails(@Valid @RequestBody GoodsReceiptDetails goodsReceiptDetails) throws URISyntaxException {
+    public ResponseEntity<GoodsReceiptDetails> createGoodsReceiptDetails(@Valid @RequestBody List<GoodsReceiptDetails> goodsReceiptDetails) throws URISyntaxException {
         log.debug("REST request to save GoodsReceiptDetails : {}", goodsReceiptDetails);
-        if (goodsReceiptDetails.getId() != null) {
-            throw new BadRequestAlertException("A new goodsReceiptDetails cannot already have an ID", ENTITY_NAME, "idexists");
+        if (goodsReceiptDetails.isEmpty()) {
+            throw new BadRequestAlertException("Empty Good Receipt(s) cannot be persists", ENTITY_NAME, "empty");
         }
-        GoodsReceiptDetails result = goodsReceiptDetailsService.save(goodsReceiptDetails);
-        return ResponseEntity.created(new URI("/api/goods-receipt-details/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        for (GoodsReceiptDetails goodReceipt : goodsReceiptDetails){
+            GoodsReceiptDetails result = goodsReceiptDetailsService.save(goodReceipt);
+        }
+        return ResponseEntity.created(new URI("/api/goods-receipt-details/" ))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, "created"))
+            .body(null);
     }
 
     /**

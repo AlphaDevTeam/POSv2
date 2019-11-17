@@ -1,5 +1,5 @@
 <div class="row justify-content-center">
-    <div class="col-8">
+    <div class="col-12">
         <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
             <h2 id="jhi-goods-receipt-details-heading">Create or edit a Goods Receipt Details</h2>
             <div>
@@ -40,10 +40,36 @@
                 <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
                     <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Cancel</span>
                 </button>
+                <button type="button" id="add" class="btn btn-secondary"  (click)="addItem()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Add</span>
+                </button>
                 <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
                     <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span>Save</span>
                 </button>
             </div>
+
+            <div class="container">
+                <table class="table table-responsive table-striped">
+                    <tr>
+                        <th>id</th>
+                        <th>qty</th>
+                        <th>item</th>
+                        <th>grn</th>
+                    </tr>
+                    <tr *ngFor="let tmp of virtualGoodsReceipts ;trackBy: trackId; let id = index">
+                        <td>{{id}}</td>
+                        <td>
+                            <span contenteditable="true" (keyup)="changeValue(id, 'grnQty', $event)" (blur)="updateList(id, 'grnQty', $event)">{{tmp.grnQty}}</span>
+                        </td>
+                        <td>{{tmp.item.itemCode}}</td>
+                        <td>{{tmp.grn.grnNumber}}</td>
+                    </tr>
+                </table>
+            </div>
+
         </form>
     </div>
+
+
+
 </div>

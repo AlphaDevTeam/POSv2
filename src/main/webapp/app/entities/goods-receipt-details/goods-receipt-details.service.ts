@@ -19,6 +19,10 @@ export class GoodsReceiptDetailsService {
     return this.http.post<IGoodsReceiptDetails>(this.resourceUrl, goodsReceiptDetails, { observe: 'response' });
   }
 
+  createMulti(goodsReceiptDetails: IGoodsReceiptDetails[]): Observable<EntityResponseType> {
+    return this.http.post<IGoodsReceiptDetails>(this.resourceUrl, goodsReceiptDetails, { observe: 'response' });
+  }
+
   update(goodsReceiptDetails: IGoodsReceiptDetails): Observable<EntityResponseType> {
     return this.http.put<IGoodsReceiptDetails>(this.resourceUrl, goodsReceiptDetails, { observe: 'response' });
   }
